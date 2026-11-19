@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<script>if (window.self !== window.top) document.documentElement.classList.add("embedded");</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BMI Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall:linear-gradient(160deg,#bcd3ff 0%,#e3d3ff 38%,#ffd3e2 68%,#ffe6c7 100%);
+    --blob1:#9ec5ff; --blob2:#d6b4ff; --blob3:#ffb3cf; --blob4:#ffd29e;
+    --win:rgba(255,255,255,.62); --titlebar:rgba(248,248,250,.72);
+    --text:#1d1d1f; --dim:#6e6e73; --line:rgba(0,0,0,.08);
+    --card:rgba(255,255,255,.62); --card-edge:rgba(255,255,255,.85);
+    --field:rgba(255,255,255,.85); --seg:rgba(0,0,0,.06); --seg-on:#fff;
+    --accent:#0a84ff; --menubar:rgba(255,255,255,.45); --shadow:rgba(40,30,90,.28);
+    --cat:#22c55e; --skin:#ffd9b8; --hair:#4a3326; --dimfig:.38;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --wall:linear-gradient(160deg,#141a3a 0%,#2a1b4d 40%,#3b1f45 70%,#142441 100%);
+      --blob1:#2b5bd7; --blob2:#7a3fd1; --blob3:#c23a7a; --blob4:#c2662b;
+      --win:rgba(32,32,38,.62); --titlebar:rgba(46,46,52,.72);
+      --text:#f5f5f7; --dim:#a1a1a6; --line:rgba(255,255,255,.1);
+      --card:rgba(255,255,255,.06); --card-edge:rgba(255,255,255,.12);
+      --field:rgba(255,255,255,.08); --seg:rgba(255,255,255,.08); --seg-on:rgba(255,255,255,.2);
+      --accent:#0a84ff; --menubar:rgba(20,20,26,.45); --shadow:rgba(0,0,0,.55); --dimfig:.32;
+    }
+  }
+  :root[data-theme="dark"]{
+    --wall:linear-gradient(160deg,#141a3a 0%,#2a1b4d 40%,#3b1f45 70%,#142441 100%);
+    --blob1:#2b5bd7; --blob2:#7a3fd1; --blob3:#c23a7a; --blob4:#c2662b;
+    --win:rgba(32,32,38,.62); --titlebar:rgba(46,46,52,.72);
+    --text:#f5f5f7; --dim:#a1a1a6; --line:rgba(255,255,255,.1);
+    --card:rgba(255,255,255,.06); --card-edge:rgba(255,255,255,.12);
+    --field:rgba(255,255,255,.08); --seg:rgba(255,255,255,.08); --seg-on:rgba(255,255,255,.2);
+    --accent:#0a84ff; --menubar:rgba(20,20,26,.45); --shadow:rgba(0,0,0,.55); --dimfig:.32;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+    color:var(--text);background:#cfd8ff;background:var(--wall);background-attachment:fixed;
+    min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  }
+  button,input{font:inherit;color:inherit}
+
+  /* ---------- wallpaper + floating things ---------- */
+  .sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.7;animation:drift 24s ease-in-out infinite alternate}
+  .b1{width:460px;height:460px;background:var(--blob1);top:-120px;left:-100px}
+  .b2{width:380px;height:380px;background:var(--blob2);top:30%;right:-120px;animation-duration:29s;animation-delay:-8s}
+  .b3{width:320px;height:320px;background:var(--blob3);bottom:-100px;left:30%;animation-duration:33s;animation-delay:-14s}
+  .b4{width:240px;height:240px;background:var(--blob4);top:55%;left:-40px;animation-duration:26s;animation-delay:-5s;opacity:.5}
+  @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(9vw,7vh) scale(1.15)}100%{transform:translate(-5vw,12vh) scale(.9)}}
+  .bubble{position:absolute;bottom:-80px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.85),rgba(255,255,255,.12) 42%,rgba(255,255,255,.05) 70%,rgba(255,255,255,.3));
+    border:1px solid rgba(255,255,255,.45);animation:rise linear infinite}
+  @keyframes rise{0%{transform:translate(0,0) scale(.8);opacity:0}10%{opacity:.9}50%{transform:translate(var(--sway),-55vh)}90%{opacity:.9}100%{transform:translate(calc(var(--sway)*-1),-115vh) scale(1.1);opacity:0}}
+
+  /* ---------- menu bar ---------- */
+  .menubar{
+    position:fixed;top:0;left:0;right:0;height:30px;z-index:20;display:flex;align-items:center;gap:18px;padding:0 16px;
+    background:var(--menubar);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+    font-size:13px;border-bottom:1px solid var(--line);
+  }
+  .menubar .app{font-weight:700}
+  .menubar .spacer{flex:1}
+  .menubar .dimtxt{opacity:.85}
+  .theme-btn{border:none;background:none;cursor:pointer;padding:2px 6px;border-radius:6px;font-size:14px;line-height:1}
+  .theme-btn:hover{background:var(--seg)}
+
+  /* ---------- window ---------- */
+  .desk{position:relative;z-index:1;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:62px 16px 110px}
+  .drag{width:100%;max-width:920px;transition:max-width .45s cubic-bezier(.2,.8,.2,1)}
+  .drag.max{max-width:1240px}
+  .float{animation:hover 7s ease-in-out infinite}
+  @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .window{
+    border-radius:14px;overflow:hidden;background:var(--win);
+    backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+    border:1px solid var(--card-edge);
+    box-shadow:0 30px 80px var(--shadow),0 0 0 .5px rgba(0,0,0,.18);
+    transform-origin:50% 100%;
+    transition:transform .5s cubic-bezier(.5,0,.2,1),opacity .4s;
+    animation:open .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes open{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:none}}
+  .window.min{transform:translateY(70vh) scale(.08);opacity:0;pointer-events:none}
+
+  .titlebar{
+    height:52px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;
+    background:var(--titlebar);border-bottom:1px solid var(--line);cursor:grab;user-select:none;touch-action:none;
+  }
+  .titlebar.grabbing{cursor:grabbing}
+  .lights{display:flex;gap:8px}
+  .lights button{width:12px;height:12px;border-radius:50%;border:none;padding:0;cursor:pointer;position:relative;
+    box-shadow:inset 0 0 0 .5px rgba(0,0,0,.2)}
+  .lights .red{background:#ff5f57}.lights .yellow{background:#febc2e}.lights .green{background:#28c840}
+  .lights button::after{position:absolute;inset:0;display:grid;place-items:center;font-size:9px;font-weight:700;
+    color:rgba(0,0,0,.55);opacity:0;line-height:12px}
+  .lights .red::after{content:"×"}.lights .yellow{cursor:default}.lights .green::after{content:"+"}
+  .lights:hover button::after{opacity:1}
+  .lights button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .seg{display:flex;background:var(--seg);border-radius:8px;padding:2px;gap:2px}
+  .seg button{border:none;background:none;padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--dim);transition:background .2s,color .2s}
+  .seg button.on{background:var(--seg-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .seg button:focus-visible{outline:2px solid var(--accent)}
+  .wintitle{justify-self:end;font-size:13px;font-weight:600;color:var(--dim)}
+
+  .pane{padding:26px 28px 30px}
+  .pane[hidden]{display:none}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pane{animation:fadein .35s ease both}
+
+  /* ---------- calculator ---------- */
+  .top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+  .card{background:var(--card);border:1px solid var(--card-edge);border-radius:14px;padding:18px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .card h3{margin:0 0 14px;font-size:13px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  .field .lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:500;margin-bottom:8px}
+  .numbox{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+  .numbox input{width:64px;border:none;background:none;text-align:right;font-size:16px;font-weight:600;outline:none;-moz-appearance:textfield}
+  .numbox input::-webkit-outer-spin-button,.numbox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .numbox:focus-within{box-shadow:0 0 0 3px rgba(10,132,255,.35);border-color:var(--accent)}
+  .numbox span{font-size:13px;color:var(--dim)}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;outline:none;
+    background:linear-gradient(90deg,var(--accent) var(--p,50%),var(--seg) var(--p,50%))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 .5px rgba(0,0,0,.1);cursor:pointer;transition:transform .15s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border:none;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(10,132,255,.4)}
+
+  .result{display:flex;flex-direction:column;justify-content:space-between}
+  .bmi-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+  .bmi{font-size:58px;font-weight:700;line-height:1;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;color:var(--cat)}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:14px;font-weight:600;
+    color:#fff;background:var(--cat);margin-bottom:8px;box-shadow:0 4px 12px color-mix(in srgb,var(--cat) 40%,transparent)}
+  .sub{font-size:13px;color:var(--dim);margin-top:4px}
+  .gauge{position:relative;margin:22px 0 6px}
+  .bar{display:flex;height:10px;border-radius:999px;overflow:hidden}
+  .bar i{display:block;height:100%}
+  .marker{position:absolute;top:-7px;width:4px;height:24px;margin-left:-2px;border-radius:2px;background:var(--text);
+    box-shadow:0 0 0 2px var(--win);transition:left .6s cubic-bezier(.2,.8,.2,1)}
+  .ticks{position:relative;height:16px;font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .ticks span{position:absolute;transform:translateX(-50%);top:4px}
+  .advice{font-size:14px;line-height:1.6;margin:10px 0 0;padding:12px 14px;border-radius:10px;
+    background:color-mix(in srgb,var(--cat) 12%,transparent);border:1px solid color-mix(in srgb,var(--cat) 30%,transparent)}
+  .advice b{color:var(--cat)}
+
+  /* ---------- figures ---------- */
+  .people{margin-top:20px}
+  .people-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+  .person{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 12px;border-radius:14px;cursor:pointer;
+    border:1px solid transparent;transition:background .3s,border-color .3s,opacity .3s;opacity:var(--dimfig);background:none}
+  .person:hover{opacity:.75}
+  .person svg{width:100%;max-width:120px;height:auto;overflow:visible;transition:transform .45s cubic-bezier(.3,1.6,.5,1);transform-origin:50% 100%}
+  .person .nm{font-size:14px;font-weight:600;text-align:center;line-height:1.3}
+  .person .rg{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .person.on{opacity:1;background:var(--card);border-color:var(--card-edge);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .person.on svg{transform:scale(1.1);animation:bounce 1.8s ease-in-out infinite}
+  .person.on .nm{color:var(--c)}
+  @keyframes bounce{0%,100%{transform:scale(1.1) translateY(0)}50%{transform:scale(1.1) translateY(-6px)}}
+  .you{font-size:11px;font-weight:700;color:#fff;background:var(--c);padding:2px 8px;border-radius:999px;visibility:hidden}
+  .person.on .you{visibility:visible;animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+  .shadow{fill:rgba(0,0,0,.12)}
+
+  /* ---------- criteria tab ---------- */
+  .formula{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:15px}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;font-weight:600}
+  .frac span:first-child{border-bottom:2px solid currentColor;padding:0 6px 2px}
+  .frac span:last-child{padding-top:2px}
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  td .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{font-size:13px;color:var(--dim);line-height:1.6;margin:14px 0 0}
+
+  /* ---------- dock ---------- */
+  .dock{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:20;display:flex;gap:10px;padding:8px 10px;
+    border-radius:20px;background:var(--menubar);border:1px solid var(--card-edge);
+    backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .dock button{position:relative;width:52px;height:52px;border:none;border-radius:13px;cursor:pointer;font-size:28px;display:grid;place-items:center;
+    background:linear-gradient(145deg,#5ac8fa,#0a84ff 55%,#5e5ce6);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 8px rgba(0,0,0,.2);
+    transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+  .dock button:hover{transform:translateY(-8px) scale(1.15)}
+  .dock button::after{content:"";position:absolute;bottom:-6px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--text);opacity:.7}
+  .dock button.bump{animation:bump .5s ease 2}
+  @keyframes bump{50%{transform:translateY(-14px)}}
+  .tip{position:absolute;bottom:68px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;padding:4px 10px;border-radius:6px;
+    background:var(--titlebar);border:1px solid var(--line);opacity:0;pointer-events:none;transition:opacity .2s}
+  .dock button:hover + .tip,.dock button:focus-visible + .tip{opacity:1}
+  .dock-item{position:relative}
+
+  /* ---------- age & sex ---------- */
+  .row2{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:end}
+  .lbl2{font-size:14px;font-weight:500;margin-bottom:8px}
+  .pick{display:inline-flex;background:var(--seg);border-radius:9px;padding:2px;gap:2px}
+  .pick button{border:none;background:none;padding:6px 12px;border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;color:var(--dim);white-space:nowrap;transition:background .2s,color .2s}
+  .pick button.on{background:var(--seg-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .pick button:focus-visible{outline:2px solid var(--accent)}
+  .agebox{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .agebox .numbox input{width:44px}
+  .pick .sx{width:18px;height:18px;vertical-align:-3px;margin-right:4px}
+  .agebox .numbox[hidden]{display:none}
+  .mode-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:4px 10px;border-radius:999px;
+    margin:0 0 16px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+  .mode-chip.kid{background:color-mix(in srgb,#f59e0b 16%,transparent);color:#b45309}
+  :root[data-theme="dark"] .mode-chip.kid{color:#fbbf24}
+  .info-h{margin:22px 0 0;font-size:15px;font-weight:600}
+  @media (max-width:420px){ .row2{grid-template-columns:1fr} .agebox{justify-content:flex-start} }
+
+  /* ---------- larger text ---------- */
+  .valtag{display:inline-block;min-width:74px;text-align:center;font-size:18px;font-weight:600;padding:4px 12px;border-radius:8px;
+    background:var(--field);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .field[hidden]{display:none}
+  .card h3{font-size:14.5px}
+  .field .lbl{font-size:17px}
+  .numbox input{font-size:18px;width:72px}
+  .numbox span{font-size:15px}
+  .pick button{font-size:16px;padding:7px 14px}
+  .seg button{font-size:15px}
+  .bmi{font-size:64px}
+  .badge{font-size:16px}
+  .sub{font-size:15px;line-height:1.6}
+  .ticks{font-size:13px;height:18px}
+  .advice{font-size:16px}
+  .mode-chip{font-size:14px}
+  .person .nm{font-size:16px}
+  .person .rg{font-size:14px}
+  .you{font-size:12.5px}
+  table{font-size:16px}
+  th{font-size:13px}
+  .note{font-size:14.5px}
+  .formula{font-size:17px}
+  .info-h{font-size:17px}
+  .menubar{font-size:14px}
+  @media (max-width:760px){
+    .bmi{font-size:52px}
+    .person .nm{font-size:12.5px}
+    .person .rg{font-size:11px}
+    .field .lbl{font-size:16px}
+  }
+
+  /* ---------- even larger text + bigger window buttons ---------- */
+  .card h3{font-size:16px}
+  .field .lbl{font-size:19px}
+  .valtag{font-size:20px}
+  .numbox input{font-size:20px;width:78px}
+  .numbox span{font-size:16px}
+  .pick button{font-size:18px;padding:8px 16px}
+  .pick .sx{width:20px;height:20px}
+  .seg button{font-size:16.5px;padding:6px 18px}
+  .bmi{font-size:72px}
+  .badge{font-size:18px;padding:6px 14px}
+  .sub{font-size:17px}
+  .ticks{font-size:14.5px;height:20px}
+  .advice{font-size:18px}
+  .mode-chip{font-size:15.5px}
+  .person .nm{font-size:18px}
+  .person .rg{font-size:15.5px}
+  .you{font-size:13.5px}
+  table{font-size:17.5px}
+  th{font-size:14px}
+  .note{font-size:16px}
+  .formula{font-size:19px}
+  .info-h{font-size:19px}
+  .wintitle{font-size:15px}
+  .lights{gap:10px}
+  .lights button{width:17px;height:17px}
+  .lights button::after{font-size:13px;line-height:17px}
+  @media (max-width:760px){
+    .bmi{font-size:56px}
+    .person .nm{font-size:13.5px}
+    .person .rg{font-size:11.5px}
+    .field .lbl{font-size:17px}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:760px){
+    .menubar .hide-sm{display:none}
+    .desk{padding:46px 10px 100px;align-items:flex-start}
+    .titlebar{grid-template-columns:auto 1fr;gap:12px;cursor:default}
+    .wintitle{display:none}
+    .seg{justify-self:end}
+    .seg button{padding:5px 10px}
+    .pane{padding:18px 14px 22px}
+    .top{grid-template-columns:minmax(0,1fr)}
+    .drag,.float,.window{min-width:0;max-width:100%}
+    .menubar{gap:10px;padding:0 10px}
+    #clock{white-space:nowrap;font-size:12px}
+    .seg{min-width:0}
+    .bmi{font-size:48px}
+    .people-row{gap:2px}
+    .person{padding:8px 0}
+    .person .nm{font-size:11.5px}
+    .person .rg{font-size:10px}
+    th,td{padding:8px 6px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    .bubble{display:none}
+  }
+
+  /* ---------- embedded in desktop window ---------- */
+  html.embedded,html.embedded body{min-height:0!important}
+  html.embedded body{background:transparent}
+  html.embedded .sky,html.embedded .menubar,html.embedded .dock{display:none}
+  html.embedded .desk{min-height:0;padding:0;display:block}
+  html.embedded .drag{max-width:none}
+  html.embedded .float{animation:none}
+  html.embedded .window{background:transparent;border:none;border-radius:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;animation:none}
+  html.embedded .titlebar{display:flex;justify-content:center;height:46px;background:transparent;cursor:default}
+  html.embedded .lights,html.embedded .wintitle{display:none}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+</div>
+
+<header class="menubar">
+  <span class="app">⚖︎ BMI Calculator</span>
+  <span class="dimtxt hide-sm">ไฟล์</span><span class="dimtxt hide-sm">มุมมอง</span><span class="dimtxt hide-sm">ช่วยเหลือ</span>
+  <span class="spacer"></span>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="สลับโหมดสว่าง/มืด">◐</button>
+  <span id="clock"></span>
+</header>
+
+<main class="desk">
+  <div class="drag" id="drag">
+    <div class="float">
+      <section class="window" id="win" aria-label="หน้าต่างคำนวณ BMI">
+        <div class="titlebar" id="titlebar">
+          <div class="lights">
+            <button class="red" id="btnClose" type="button" aria-label="ปิดหน้าต่าง"></button>
+            <button class="yellow" id="btnMin" type="button" aria-label="ย่อหน้าต่าง"></button>
+            <button class="green" id="btnMax" type="button" aria-label="ขยายหน้าต่าง"></button>
+          </div>
+          <div class="seg" role="tablist">
+            <button class="on" role="tab" aria-selected="true" data-tab="calc" type="button">คำนวณ</button>
+            <button role="tab" aria-selected="false" data-tab="info" type="button">เกณฑ์ BMI</button>
+          </div>
+          <div class="wintitle">ดัชนีมวลกาย</div>
+        </div>
+
+        <!-- calculator -->
+        <div class="pane" id="pane-calc" role="tabpanel">
+          <div class="top">
+            <div class="card">
+              <h3>ข้อมูลของคุณ</h3>
+              <div class="field">
+                <div class="lbl">เพศ
+                  <div class="pick" id="sexPick" role="radiogroup" aria-label="เพศ">
+                    <button type="button" data-sex="m" class="on" role="radio" aria-checked="true"><svg class="sx" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="14" r="6" fill="none" stroke="#3b82f6" stroke-width="2.6"/><path d="M14.3 9.7 20 4M14.5 4H20v5.5" fill="none" stroke="#3b82f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>ชาย</button>
+                    <button type="button" data-sex="f" role="radio" aria-checked="false"><svg class="sx" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="6" fill="none" stroke="#ec4899" stroke-width="2.6"/><path d="M12 15v7M8.5 18.5h7" fill="none" stroke="#ec4899" stroke-width="2.6" stroke-linecap="round"/></svg>หญิง</button>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="lbl">อายุ <span class="valtag" id="ayTxt">19 ปี</span></div>
+                <input id="ay" type="range" min="2" max="100" step="1" value="19" aria-label="อายุ (ปี)">
+              </div>
+              <div class="field" id="amField" hidden>
+                <div class="lbl">เดือน <span class="valtag" id="amTxt">0 เดือน</span></div>
+                <input id="am" type="range" min="0" max="11" step="1" value="0" aria-label="อายุ (เดือน)">
+              </div>
+              <div class="mode-chip" id="modeChip"></div>
+              <div class="field">
+                <div class="lbl">น้ำหนัก
+                  <span class="numbox"><input id="wn" type="number" inputmode="decimal" min="10" max="200" step="0.1" value="55" aria-label="น้ำหนัก (กิโลกรัม)"><span>กก.</span></span>
+                </div>
+                <input id="w" type="range" aria-label="เลื่อนปรับน้ำหนัก" min="10" max="200" step="0.5" value="55">
+              </div>
+              <div class="field">
+                <div class="lbl">ส่วนสูง
+                  <span class="numbox"><input id="hn" type="number" inputmode="decimal" min="80" max="220" step="0.1" value="165" aria-label="ส่วนสูง (เซนติเมตร)"><span>ซม.</span></span>
+                </div>
+                <input id="h" type="range" aria-label="เลื่อนปรับส่วนสูง" min="80" max="220" step="0.5" value="165">
+              </div>
+            </div>
+
+            <div class="card result" id="result">
+              <div>
+                <h3>ผลลัพธ์</h3>
+                <div class="bmi-row">
+                  <div class="bmi" id="bmi" aria-live="polite">–</div>
+                  <div class="badge" id="badge">–</div>
+                </div>
+                <div class="sub" id="sub"></div>
+              </div>
+              <div>
+                <div class="gauge">
+                  <div class="bar" id="bar"></div>
+                  <div class="marker" id="marker"></div>
+                </div>
+                <div class="ticks" id="ticks"></div>
+              </div>
+            </div>
+          </div>
+
+          <p class="advice" id="advice"></p>
+
+          <div class="people">
+            <div class="people-row" id="people"></div>
+          </div>
+        </div>
+
+        <!-- criteria -->
+        <div class="pane" id="pane-info" role="tabpanel" hidden>
+          <div class="card">
+            <h3>สูตรคำนวณ</h3>
+            <div class="formula">
+              <b>BMI =</b>
+              <span class="frac"><span>น้ำหนัก (กก.)</span><span>ส่วนสูง (ม.)²</span></span>
+              <span style="color:var(--dim)">เช่น 55 ÷ (1.65 × 1.65) = 20.2</span>
+            </div>
+          </div>
+          <h4 class="info-h">ผู้ใหญ่ อายุ 18 ปีขึ้นไป (ใช้เกณฑ์เดียวกันทั้งชายและหญิง)</h4>
+          <table>
+            <thead><tr><th>ช่วง BMI</th><th>เกณฑ์</th><th>ความหมาย</th></tr></thead>
+            <tbody id="tbl"></tbody>
+          </table>
+          <h4 class="info-h">เด็กและวัยรุ่น อายุ 5–17 ปี (แยกตามเพศและอายุ)</h4>
+          <table>
+            <thead><tr><th>z-score</th><th>เกณฑ์</th><th>ความหมาย</th></tr></thead>
+            <tbody id="tblKid"></tbody>
+          </table>
+          <p class="note">ผู้ใหญ่ใช้เกณฑ์สำหรับคนเอเชีย (WHO Asia-Pacific ที่ใช้ในประเทศไทย) ·
+            เด็กและวัยรุ่นเทียบ BMI กับเด็กเพศและอายุเดียวกัน ตามกราฟอ้างอิง WHO Growth Reference 2007 (5–19 ปี) แล้วบอกเป็น z-score และเปอร์เซ็นไทล์ ·
+            เด็กอายุต่ำกว่า 5 ปี ควรใช้กราฟการเจริญเติบโตในสมุดบันทึกสุขภาพแม่และเด็ก ·
+            BMI เป็นค่าประมาณคร่าว ๆ ไม่ได้แยกกล้ามเนื้อกับไขมัน จึงอาจคลาดเคลื่อนในนักกีฬา ผู้สูงอายุ และหญิงตั้งครรภ์ หากกังวลเรื่องสุขภาพควรปรึกษาแพทย์</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<nav class="dock" aria-label="Dock">
+  <div class="dock-item">
+    <button id="dockApp" type="button" aria-label="เปิดหน้าต่าง BMI Calculator">⚖️</button>
+    <span class="tip">BMI Calculator</span>
+  </div>
+</nav>
+
+<script>
+(() => {
+  // ---------- WHO Growth Reference 2007, BMI-for-age 5–19 y: [L, M, S] per month from 61 to 228 ----------
+  const LMS = {"m":[[-0.7387,15.2641,0.0839],[-0.7621,15.2616,0.08414],[-0.7856,15.2604,0.08439],[-0.8089,15.2605,0.08464],[-0.8322,15.2619,0.0849],[-0.8554,15.2645,0.08516],[-0.8785,15.2684,0.08543],[-0.9015,15.2737,0.0857],[-0.9243,15.2801,0.08597],[-0.9471,15.2877,0.08625],[-0.9697,15.2965,0.08653],[-0.9921,15.3062,0.08682],[-1.0144,15.3169,0.08711],[-1.0365,15.3285,0.08741],[-1.0584,15.3408,0.08771],[-1.0801,15.354,0.08802],[-1.1017,15.3679,0.08833],[-1.123,15.3825,0.08865],[-1.1441,15.3978,0.08898],[-1.1649,15.4137,0.08931],[-1.1856,15.4302,0.08964],[-1.206,15.4473,0.08998],[-1.2261,15.465,0.09033],[-1.246,15.4832,0.09068],[-1.2656,15.5019,0.09103],[-1.2849,15.521,0.09139],[-1.304,15.5407,0.09176],[-1.3228,15.5608,0.09213],[-1.3414,15.5814,0.09251],[-1.3596,15.6023,0.09289],[-1.3776,15.6237,0.09327],[-1.3953,15.6455,0.09366],[-1.4126,15.6677,0.09406],[-1.4297,15.6903,0.09445],[-1.4464,15.7133,0.09486],[-1.4629,15.7368,0.09526],[-1.479,15.7606,0.09567],[-1.4947,15.7848,0.09609],[-1.5101,15.8094,0.09651],[-1.5252,15.8344,0.09693],[-1.5399,15.8597,0.09735],[-1.5542,15.8855,0.09778],[-1.5681,15.9116,0.09821],[-1.5817,15.9381,0.09864],[-1.5948,15.9651,0.09907],[-1.6076,15.9925,0.09951],[-1.6199,16.0205,0.09994],[-1.6318,16.049,0.10038],[-1.6433,16.0781,0.10082],[-1.6544,16.1078,0.10126],[-1.6651,16.1381,0.1017],[-1.6753,16.1692,0.10214],[-1.6851,16.2009,0.10259],[-1.6944,16.2333,0.10303],[-1.7032,16.2665,0.10347],[-1.7116,16.3004,0.10391],[-1.7196,16.3351,0.10435],[-1.7271,16.3704,0.10478],[-1.7341,16.4065,0.10522],[-1.7407,16.4433,0.10566],[-1.7468,16.4807,0.10609],[-1.7525,16.5189,0.10652],[-1.7578,16.5578,0.10695],[-1.7626,16.5974,0.10738],[-1.767,16.6376,0.1078],[-1.771,16.6786,0.10823],[-1.7745,16.7203,0.10865],[-1.7777,16.7628,0.10906],[-1.7804,16.8059,0.10948],[-1.7828,16.8497,0.10989],[-1.7847,16.8941,0.1103],[-1.7862,16.9392,0.1107],[-1.7873,16.985,0.1111],[-1.7881,17.0314,0.1115],[-1.7884,17.0784,0.11189],[-1.7884,17.1262,0.11228],[-1.788,17.1746,0.11266],[-1.7873,17.2236,0.11304],[-1.7861,17.2734,0.11342],[-1.7846,17.324,0.11379],[-1.7828,17.3752,0.11415],[-1.7806,17.4272,0.11451],[-1.778,17.4799,0.11487],[-1.7751,17.5334,0.11522],[-1.7719,17.5877,0.11556],[-1.7684,17.6427,0.1159],[-1.7645,17.6985,0.11623],[-1.7604,17.7551,0.11656],[-1.7559,17.8124,0.11688],[-1.7511,17.8704,0.1172],[-1.7461,17.9292,0.11751],[-1.7408,17.9887,0.11781],[-1.7352,18.0488,0.11811],[-1.7293,18.1096,0.11841],[-1.7232,18.171,0.11869],[-1.7168,18.233,0.11898],[-1.7102,18.2955,0.11925],[-1.7033,18.3586,0.11952],[-1.6962,18.4221,0.11979],[-1.6888,18.486,0.12005],[-1.6811,18.5502,0.1203],[-1.6732,18.6148,0.12055],[-1.6651,18.6795,0.12079],[-1.6568,18.7445,0.12102],[-1.6482,18.8095,0.12125],[-1.6394,18.8746,0.12148],[-1.6304,18.9398,0.1217],[-1.6211,19.005,0.12191],[-1.6116,19.0701,0.12212],[-1.602,19.1351,0.12233],[-1.5921,19.2,0.12253],[-1.5821,19.2648,0.12272],[-1.5719,19.3294,0.12291],[-1.5615,19.3937,0.1231],[-1.551,19.4578,0.12328],[-1.5403,19.5217,0.12346],[-1.5294,19.5853,0.12363],[-1.5185,19.6486,0.1238],[-1.5074,19.7117,0.12396],[-1.4961,19.7744,0.12412],[-1.4848,19.8367,0.12428],[-1.4733,19.8987,0.12443],[-1.4617,19.9603,0.12458],[-1.45,20.0215,0.12473],[-1.4382,20.0823,0.12487],[-1.4263,20.1427,0.12501],[-1.4143,20.2026,0.12514],[-1.4022,20.2621,0.12528],[-1.39,20.3211,0.12541],[-1.3777,20.3796,0.12554],[-1.3653,20.4376,0.12567],[-1.3529,20.4951,0.12579],[-1.3403,20.5521,0.12591],[-1.3277,20.6085,0.12603],[-1.3149,20.6644,0.12615],[-1.3021,20.7197,0.12627],[-1.2892,20.7745,0.12638],[-1.2762,20.8287,0.1265],[-1.2631,20.8824,0.12661],[-1.2499,20.9355,0.12672],[-1.2366,20.9881,0.12683],[-1.2233,21.04,0.12694],[-1.2098,21.0914,0.12704],[-1.1962,21.1423,0.12715],[-1.1826,21.1925,0.12726],[-1.1688,21.2423,0.12736],[-1.155,21.2914,0.12746],[-1.141,21.34,0.12756],[-1.127,21.388,0.12767],[-1.1129,21.4354,0.12777],[-1.0986,21.4822,0.12787],[-1.0843,21.5285,0.12797],[-1.0699,21.5742,0.12807],[-1.0553,21.6193,0.12816],[-1.0407,21.6638,0.12826],[-1.026,21.7077,0.12836],[-1.0112,21.751,0.12845],[-0.9962,21.7937,0.12855],[-0.9812,21.8358,0.12864],[-0.9661,21.8773,0.12874],[-0.9509,21.9182,0.12883],[-0.9356,21.9585,0.12893],[-0.9202,21.9982,0.12902],[-0.9048,22.0374,0.12911],[-0.8892,22.076,0.1292],[-0.8735,22.114,0.1293],[-0.8578,22.1514,0.12939],[-0.8419,22.1883,0.12948]],"f":[[-0.8886,15.2441,0.09692],[-0.9068,15.2434,0.09738],[-0.9248,15.2433,0.09783],[-0.9427,15.2438,0.09829],[-0.9605,15.2448,0.09875],[-0.978,15.2464,0.0992],[-0.9954,15.2487,0.09966],[-1.0126,15.2516,0.10012],[-1.0296,15.2551,0.10058],[-1.0464,15.2592,0.10104],[-1.063,15.2641,0.10149],[-1.0794,15.2697,0.10195],[-1.0956,15.276,0.10241],[-1.1115,15.2831,0.10287],[-1.1272,15.2911,0.10333],[-1.1427,15.2998,0.10379],[-1.1579,15.3095,0.10425],[-1.1728,15.32,0.10471],[-1.1875,15.3314,0.10517],[-1.2019,15.3439,0.10562],[-1.216,15.3572,0.10608],[-1.2298,15.3717,0.10654],[-1.2433,15.3871,0.107],[-1.2565,15.4036,0.10746],[-1.2693,15.4211,0.10792],[-1.2819,15.4397,0.10837],[-1.2941,15.4593,0.10883],[-1.306,15.4798,0.10929],[-1.3175,15.5014,0.10974],[-1.3287,15.524,0.1102],[-1.3395,15.5476,0.11065],[-1.3499,15.5723,0.1111],[-1.36,15.5979,0.11156],[-1.3697,15.6246,0.11201],[-1.379,15.6523,0.11246],[-1.388,15.681,0.11291],[-1.3966,15.7107,0.11335],[-1.4047,15.7415,0.1138],[-1.4125,15.7732,0.11424],[-1.4199,15.8058,0.11469],[-1.427,15.8394,0.11513],[-1.4336,15.8738,0.11557],[-1.4398,15.909,0.11601],[-1.4456,15.9451,0.11644],[-1.4511,15.9818,0.11688],[-1.4561,16.0194,0.11731],[-1.4607,16.0575,0.11774],[-1.465,16.0964,0.11816],[-1.4688,16.1358,0.11859],[-1.4723,16.1759,0.11901],[-1.4753,16.2166,0.11943],[-1.478,16.258,0.11985],[-1.4803,16.2999,0.12026],[-1.4823,16.3425,0.12067],[-1.4838,16.3858,0.12108],[-1.485,16.4298,0.12148],[-1.4859,16.4746,0.12188],[-1.4864,16.52,0.12228],[-1.4866,16.5663,0.12268],[-1.4864,16.6133,0.12307],[-1.4859,16.6612,0.12346],[-1.4851,16.71,0.12384],[-1.4839,16.7595,0.12422],[-1.4825,16.81,0.1246],[-1.4807,16.8614,0.12497],[-1.4787,16.9136,0.12534],[-1.4763,16.9667,0.12571],[-1.4737,17.0208,0.12607],[-1.4708,17.0757,0.12643],[-1.4677,17.1316,0.12678],[-1.4642,17.1883,0.12713],[-1.4606,17.2459,0.12748],[-1.4567,17.3044,0.12782],[-1.4526,17.3637,0.12816],[-1.4482,17.4238,0.12849],[-1.4436,17.4847,0.12882],[-1.4389,17.5464,0.12914],[-1.4339,17.6088,0.12946],[-1.4288,17.6719,0.12978],[-1.4235,17.7357,0.13009],[-1.418,17.8001,0.1304],[-1.4123,17.8651,0.1307],[-1.4065,17.9306,0.13099],[-1.4006,17.9966,0.13129],[-1.3945,18.063,0.13158],[-1.3883,18.1297,0.13186],[-1.3819,18.1967,0.13214],[-1.3755,18.2639,0.13241],[-1.3689,18.3312,0.13268],[-1.3621,18.3986,0.13295],[-1.3553,18.466,0.13321],[-1.3483,18.5333,0.13347],[-1.3413,18.6006,0.13372],[-1.3341,18.6677,0.13397],[-1.3269,18.7346,0.13421],[-1.3195,18.8012,0.13445],[-1.3121,18.8675,0.13469],[-1.3046,18.9335,0.13492],[-1.297,18.9991,0.13514],[-1.2894,19.0642,0.13537],[-1.2816,19.1289,0.13559],[-1.2739,19.1931,0.1358],[-1.2661,19.2567,0.13601],[-1.2583,19.3197,0.13622],[-1.2504,19.382,0.13642],[-1.2425,19.4437,0.13662],[-1.2345,19.5045,0.13681],[-1.2266,19.5647,0.137],[-1.2186,19.624,0.13719],[-1.2107,19.6824,0.13738],[-1.2027,19.74,0.13756],[-1.1947,19.7966,0.13774],[-1.1867,19.8523,0.13791],[-1.1788,19.907,0.13808],[-1.1708,19.9607,0.13825],[-1.1629,20.0133,0.13841],[-1.1549,20.0648,0.13858],[-1.147,20.1152,0.13873],[-1.139,20.1644,0.13889],[-1.1311,20.2125,0.13904],[-1.1232,20.2595,0.1392],[-1.1153,20.3053,0.13934],[-1.1074,20.3499,0.13949],[-1.0996,20.3934,0.13963],[-1.0917,20.4357,0.13977],[-1.0838,20.4769,0.13991],[-1.076,20.517,0.14005],[-1.0681,20.556,0.14018],[-1.0603,20.5938,0.14031],[-1.0525,20.6306,0.14044],[-1.0447,20.6663,0.14057],[-1.0368,20.7008,0.1407],[-1.029,20.7344,0.14082],[-1.0212,20.7668,0.14094],[-1.0134,20.7982,0.14106],[-1.0055,20.8286,0.14118],[-0.9977,20.858,0.1413],[-0.9898,20.8863,0.14142],[-0.9819,20.9137,0.14153],[-0.974,20.9401,0.14164],[-0.9661,20.9656,0.14176],[-0.9582,20.9901,0.14187],[-0.9503,21.0138,0.14198],[-0.9423,21.0367,0.14208],[-0.9344,21.0587,0.14219],[-0.9264,21.0801,0.1423],[-0.9184,21.1007,0.1424],[-0.9104,21.1206,0.1425],[-0.9024,21.1399,0.14261],[-0.8944,21.1586,0.14271],[-0.8863,21.1768,0.14281],[-0.8783,21.1944,0.14291],[-0.8703,21.2116,0.14301],[-0.8623,21.2282,0.14311],[-0.8542,21.2444,0.1432],[-0.8462,21.2603,0.1433],[-0.8382,21.2757,0.1434],[-0.8301,21.2908,0.14349],[-0.8221,21.3055,0.14359],[-0.814,21.32,0.14368],[-0.806,21.3341,0.14377],[-0.798,21.348,0.14386],[-0.7899,21.3617,0.14396],[-0.7819,21.3752,0.14405],[-0.7738,21.3884,0.14414],[-0.7658,21.4014,0.14423],[-0.7577,21.4143,0.14432],[-0.7496,21.4269,0.14441]]};
+
+  // ---------- categories ----------
+  const ADULT = [
+    { max: 18.5, name: 'ผอม', full: 'น้ำหนักน้อย / ผอม', range: '< 18.5', color: '#4f9dff', k: 0,
+      mean: 'น้ำหนักน้อยกว่าเกณฑ์',
+      tip: 'ลองเพิ่มมื้ออาหารที่มีโปรตีนและพลังงานเพียงพอ ควบคู่กับออกกำลังกายเพิ่มกล้ามเนื้อ' },
+    { max: 23, name: 'ปกติ', full: 'ปกติ (สุขภาพดี)', range: '18.5 – 22.9', color: '#22c55e', k: 1,
+      mean: 'น้ำหนักเหมาะสม',
+      tip: 'เยี่ยมเลย! รักษาการกินที่หลากหลายและออกกำลังกายสม่ำเสมอแบบนี้ต่อไป' },
+    { max: 25, name: 'ท้วม', full: 'ท้วม / โรคอ้วนระดับ 1', range: '23 – 24.9', color: '#eab308', k: 2,
+      mean: 'เริ่มมีความเสี่ยง',
+      tip: 'ลดของหวาน ของทอด เครื่องดื่มรสหวาน และเพิ่มการขยับร่างกายวันละ 30 นาที' },
+    { max: 30, name: 'อ้วน', full: 'อ้วน / โรคอ้วนระดับ 2', range: '25 – 29.9', color: '#f97316', k: 3,
+      mean: 'เสี่ยงต่อโรคที่มากับความอ้วน',
+      tip: 'ควรคุมปริมาณอาหาร ออกกำลังกายแบบแอโรบิกสม่ำเสมอ และตรวจสุขภาพประจำปี' },
+    { max: Infinity, name: 'อ้วนมาก', full: 'อ้วนมาก / โรคอ้วนระดับ 3', range: '≥ 30', color: '#ef4444', k: 4,
+      mean: 'เสี่ยงสูง',
+      tip: 'แนะนำให้ปรึกษาแพทย์หรือนักโภชนาการเพื่อวางแผนลดน้ำหนักอย่างปลอดภัย' }
+  ];
+  // WHO cut-offs for 5–19 y: < −3 SD severe thinness, < −2 SD thinness, > +1 SD overweight, > +2 SD obesity
+  const KID = [
+    { zmax: -3, name: 'ผอมมาก', full: 'ผอมมาก', zr: 'z < −3', color: '#3b82f6', k: -0.6,
+      mean: 'น้ำหนักน้อยกว่าเกณฑ์มาก',
+      tip: 'ควรพาไปพบกุมารแพทย์หรือนักโภชนาการ เพื่อตรวจสุขภาพและวางแผนเพิ่มน้ำหนักอย่างเหมาะสม' },
+    { zmax: -2, name: 'ผอม', full: 'ผอม', zr: '−3 ถึง −2', color: '#60a5fa', k: 0,
+      mean: 'น้ำหนักน้อยกว่าเกณฑ์',
+      tip: 'กินให้ครบ 3 มื้อ เพิ่มนม ไข่ เนื้อสัตว์ และของว่างที่มีประโยชน์ระหว่างมื้อ' },
+    { zmax: 1, name: 'สมส่วน', full: 'สมส่วน (ปกติ)', zr: '−2 ถึง +1', color: '#22c55e', k: 1,
+      mean: 'น้ำหนักเหมาะสมกับวัย',
+      tip: 'เยี่ยมเลย! กินอาหารหลากหลาย นอนหลับให้พอ และออกไปวิ่งเล่นทุกวัน' },
+    { zmax: 2, name: 'น้ำหนักเกิน', full: 'น้ำหนักเกิน / ท้วม', zr: '+1 ถึง +2', color: '#f97316', k: 2.5,
+      mean: 'เริ่มมีน้ำหนักเกินเกณฑ์',
+      tip: 'ลดน้ำหวาน ขนมกรุบกรอบ และเวลาหน้าจอ ขยับร่างกายให้ได้อย่างน้อยวันละ 60 นาที' },
+    { zmax: Infinity, name: 'อ้วน', full: 'อ้วน', zr: 'z > +2', color: '#ef4444', k: 4,
+      mean: 'น้ำหนักเกินเกณฑ์มาก',
+      tip: 'ควรปรึกษากุมารแพทย์ เพื่อวางแผนดูแลน้ำหนักอย่างปลอดภัยร่วมกันทั้งครอบครัว' }
+  ];
+
+  // ---------- LMS maths ----------
+  const lmsAt = (sex, months) => LMS[sex][Math.min(228, Math.max(61, Math.round(months))) - 61];
+  const bmiAtZ = ([L, M, S], z) => M * Math.pow(1 + L * S * z, 1 / L);
+  function zOf(bmi, p) {
+    const [L, M, S] = p;
+    let z = (Math.pow(bmi / M, L) - 1) / (L * S);
+    if (z > 3) { const a = bmiAtZ(p, 3), b = bmiAtZ(p, 2); z = 3 + (bmi - a) / (a - b); }      // WHO restricted tail
+    else if (z < -3) { const a = bmiAtZ(p, -3), b = bmiAtZ(p, -2); z = -3 - (a - bmi) / (b - a); }
+    return z;
+  }
+  function normCdf(z) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp(-z * z / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - p : p;
+  }
+
+  // ---------- cute cartoon person (k: −0.6 very thin … 4 fat) ----------
+  function person(k, color, sex) {
+    const r = 17 + Math.max(0, k) * 1.2;
+    const hy = 34;
+    const bw = 24 + k * 13;
+    const by = 96, bh = 34 + k * 2.5;
+    const legGap = 5 + k * 3.2, legW = 9 + k * 2.6, legTop = by + bh * 0.55, legBot = 160;
+    const armW = 7 + k * 1.6, sx = bw * 0.36, ex = bw / 2 + 9 + k * 1.5;
+    const girl = sex === 'f';
+    const longHair = girl ? `<path d="M${60 - r - 3} ${hy - 2} Q${60 - r - 5} ${hy + r + 10} ${60 - r * 0.4} ${hy + r + 8} L${60 + r * 0.4} ${hy + r + 8} Q${60 + r + 5} ${hy + r + 10} ${60 + r + 3} ${hy - 2} Z" fill="var(--hair)"/>` : '';
+    const bow = girl ? `<g transform="translate(${60 + r * 0.62} ${hy - r * 0.78}) rotate(20)"><path d="M0 0 L-7 -5 L-7 5 Z M0 0 L7 -5 L7 5 Z" fill="#ff6fa8"/><circle r="2.4" fill="#ff4f93"/></g>` : '';
+    const skirt = girl ? `<path d="M${60 - bw / 2 - 3} ${by + bh * 0.62} L${60 + bw / 2 + 3} ${by + bh * 0.62} L${60 + bw / 2 - 2} ${by + bh * 0.2} L${60 - bw / 2 + 2} ${by + bh * 0.2} Z" fill="${color}" opacity=".9"/>` : '';
+    const lashes = girl ? `<path d="M${60 - r * 0.38 - 3} ${hy + 0.5} l-1.6 -1.6 M${60 + r * 0.38 + 3} ${hy + 0.5} l1.6 -1.6" stroke="#2b2f3a" stroke-width="1.2" stroke-linecap="round"/>` : '';
+    return `
+<svg viewBox="0 0 120 172" aria-hidden="true">
+  <ellipse class="shadow" cx="60" cy="166" rx="${Math.max(14, 20 + k * 7)}" ry="5"/>
+  <rect x="${60 - legGap - legW}" y="${legTop}" width="${legW}" height="${legBot - legTop}" rx="${legW / 2}" fill="${girl ? 'var(--skin)' : '#3d4b6b'}"/>
+  <rect x="${60 + legGap}" y="${legTop}" width="${legW}" height="${legBot - legTop}" rx="${legW / 2}" fill="${girl ? 'var(--skin)' : '#3d4b6b'}"/>
+  <ellipse cx="${60 - legGap - legW / 2 - 2}" cy="${legBot + 1}" rx="${legW / 2 + 4}" ry="4.5" fill="${girl ? '#e0457b' : '#2b2f3a'}"/>
+  <ellipse cx="${60 + legGap + legW / 2 + 2}" cy="${legBot + 1}" rx="${legW / 2 + 4}" ry="4.5" fill="${girl ? '#e0457b' : '#2b2f3a'}"/>
+  <path d="M${60 - sx} ${by - bh + 10} L${60 - ex} ${by + 18}" stroke="var(--skin)" stroke-width="${armW}" stroke-linecap="round"/>
+  <path d="M${60 + sx} ${by - bh + 10} L${60 + ex} ${by + 18}" stroke="var(--skin)" stroke-width="${armW}" stroke-linecap="round"/>
+  <ellipse cx="60" cy="${by}" rx="${bw / 2}" ry="${bh}" fill="${color}"/>
+  ${skirt}
+  <ellipse cx="${60 - bw * 0.18}" cy="${by - bh * 0.45}" rx="${bw * 0.14}" ry="${bh * 0.22}" fill="#fff" opacity=".25"/>
+  ${longHair}
+  <circle cx="60" cy="${hy}" r="${r}" fill="var(--skin)"/>
+  <path d="M${60 - r} ${hy - 2} A${r} ${r} 0 0 1 ${60 + r} ${hy - 2} Q${60 + r * 0.3} ${hy - r * 0.55} ${60 - r * 0.2} ${hy - r * 0.35} Q${60 - r * 0.7} ${hy - r * 0.2} ${60 - r} ${hy - 2}Z" fill="var(--hair)"/>
+  ${bow}
+  <circle cx="${60 - r * 0.38}" cy="${hy + 3}" r="2.3" fill="#2b2f3a"/>
+  <circle cx="${60 + r * 0.38}" cy="${hy + 3}" r="2.3" fill="#2b2f3a"/>
+  <circle cx="${60 - r * 0.38 + .8}" cy="${hy + 2.2}" r=".8" fill="#fff"/>
+  <circle cx="${60 + r * 0.38 + .8}" cy="${hy + 2.2}" r=".8" fill="#fff"/>
+  ${lashes}
+  <ellipse cx="${60 - r * 0.62}" cy="${hy + 8}" rx="${3 + Math.max(0, k) * .5}" ry="2.2" fill="#ff8fa3" opacity=".55"/>
+  <ellipse cx="${60 + r * 0.62}" cy="${hy + 8}" rx="${3 + Math.max(0, k) * .5}" ry="2.2" fill="#ff8fa3" opacity=".55"/>
+  <path d="M56 ${hy + 8} Q60 ${hy + 12.5} 64 ${hy + 8}" stroke="#2b2f3a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</svg>`;
+  }
+
+  // ---------- state & elements ----------
+  const $ = id => document.getElementById(id);
+  const w = $('w'), wn = $('wn'), h = $('h'), hn = $('hn'), ay = $('ay'), am = $('am');
+  const peopleEl = $('people'), bar = $('bar'), ticksEl = $('ticks');
+  let sex = 'm', cards = [], builtKey = '';
+  const fill = r => r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%');
+  const f1 = n => n.toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const SEXNAME = { m: 'ชาย', f: 'หญิง' };
+
+  // adult gauge: BMI 14–36 · kid gauge: z −4 … +4
+  const A_MIN = 14, A_MAX = 36, Z_MIN = -4, Z_MAX = 4;
+  const aPct = v => (Math.min(A_MAX, Math.max(A_MIN, v)) - A_MIN) / (A_MAX - A_MIN) * 100;
+  const zPct = z => (Math.min(Z_MAX, Math.max(Z_MIN, z)) - Z_MIN) / (Z_MAX - Z_MIN) * 100;
+
+  function getAge() {
+    const y = parseFloat(ay.value), mo = parseFloat(am.value) || 0;
+    if (!(y >= 0)) return null;
+    return { y, mo: y >= 18 ? 0 : Math.min(11, Math.max(0, mo)), months: y * 12 + (y >= 18 ? 0 : Math.min(11, Math.max(0, mo))) };
+  }
+  const modeOf = age => !age ? 'adult' : age.y >= 18 ? 'adult' : age.months >= 60 ? 'kid' : 'small';
+
+  function buildPeople(mode, p) {
+    const cats = mode === 'adult' ? ADULT : KID;
+    const key = mode + sex + (p ? p.join() : '');
+    if (key === builtKey) return;
+    builtKey = key;
+    peopleEl.innerHTML = '';
+    let rangeOf;
+    if (mode === 'adult') rangeOf = c => c.range;
+    else if (p) {
+      const cut = [-3, -2, 1, 2].map(z => bmiAtZ(p, z).toFixed(1));
+      const R = [`< ${cut[0]}`, `${cut[0]} – ${cut[1]}`, `${cut[1]} – ${cut[2]}`, `${cut[2]} – ${cut[3]}`, `> ${cut[3]}`];
+      rangeOf = (c, i) => R[i];
+    } else rangeOf = c => c.zr;
+    cards = cats.map((c, i) => {
+      const d = document.createElement('button');
+      d.type = 'button';
+      d.className = 'person';
+      d.style.setProperty('--c', c.color);
+      d.setAttribute('aria-label', `${c.full} BMI ${rangeOf(c, i)}`);
+      d.innerHTML = `<span class="you">คุณอยู่ตรงนี้</span>${person(c.k, c.color, sex)}<span class="nm">${c.name}</span><span class="rg">${rangeOf(c, i)}</span>`;
+      d.addEventListener('click', () => jumpTo(i));
+      peopleEl.appendChild(d);
+      return d;
+    });
+    // gauge
+    bar.innerHTML = '';
+    if (mode === 'adult') {
+      let prev = A_MIN;
+      ADULT.forEach(c => { const hi = Math.min(c.max, A_MAX); bar.insertAdjacentHTML('beforeend', `<i style="width:${aPct(hi) - aPct(prev)}%;background:${c.color}"></i>`); prev = hi; });
+      ticksEl.innerHTML = [18.5, 23, 25, 30].map(t => `<span style="left:${aPct(t)}%">${t}</span>`).join('');
+    } else {
+      let prev = Z_MIN;
+      KID.forEach(c => { const hi = Math.min(c.zmax, Z_MAX); bar.insertAdjacentHTML('beforeend', `<i style="width:${zPct(hi) - zPct(prev)}%;background:${c.color}"></i>`); prev = hi; });
+      ticksEl.innerHTML = p ? [-3, -2, 1, 2].map(z => `<span style="left:${zPct(z)}%">${bmiAtZ(p, z).toFixed(1)}</span>`).join('') : '';
+    }
+  }
+
+  $('tbl').innerHTML = ADULT.map(c =>
+    `<tr><td class="num"><span class="dot" style="background:${c.color}"></span>${c.range}</td><td><b>${c.full}</b></td><td>${c.mean}</td></tr>`).join('');
+  $('tblKid').innerHTML = KID.map(c =>
+    `<tr><td class="num"><span class="dot" style="background:${c.color}"></span>${c.zr}</td><td><b>${c.full}</b></td><td>${c.mean}</td></tr>`).join('');
+
+  // ---------- calculation ----------
+  let last = null;
+  function update() {
+    const kg = parseFloat(wn.value), cm = parseFloat(hn.value), age = getAge();
+    const mode = modeOf(age);
+    $('amField').hidden = !(age && age.y < 18);
+    $('ayTxt').textContent = ay.value + ' ปี';
+    $('amTxt').textContent = am.value + ' เดือน';
+    fill(ay); fill(am);
+    const chip = $('modeChip');
+    chip.className = 'mode-chip' + (mode === 'adult' ? '' : ' kid');
+    chip.textContent = mode === 'adult' ? '🧑 ใช้เกณฑ์ผู้ใหญ่ (คนเอเชีย) · ใช้ได้ทั้งชายและหญิง'
+      : mode === 'kid' ? `🧒 ใช้เกณฑ์เด็กและวัยรุ่นของ WHO · เทียบกับเด็ก${SEXNAME[sex]}อายุเดียวกัน`
+      : '👶 อายุต่ำกว่า 5 ปี ใช้กราฟการเจริญเติบโตของเด็กเล็ก';
+    const p = mode === 'kid' ? lmsAt(sex, age.months) : null;
+    buildPeople(mode === 'small' ? 'kid' : mode, p);
+
+    if (!(kg > 0) || !(cm > 0) || !age) {
+      $('bmi').textContent = '–'; $('badge').textContent = 'กรอกข้อมูล'; $('sub').textContent = '';
+      $('advice').textContent = 'กรอกเพศ อายุ น้ำหนัก และส่วนสูงเพื่อคำนวณ';
+      cards.forEach(el => el.classList.remove('on'));
+      last = null;
+      return;
+    }
+    const m = cm / 100;
+    const bmi = kg / (m * m);
+    $('bmi').textContent = bmi.toFixed(1);
+    const cmTxt = cm.toLocaleString('th-TH', { maximumFractionDigits: 1 });
+    let c, k, lo, hi, extra = '';
+
+    if (mode === 'adult') {
+      k = ADULT.findIndex(x => bmi < x.max); c = ADULT[k];
+      lo = 18.5 * m * m; hi = 22.9 * m * m;
+      $('sub').textContent = `น้ำหนักที่เหมาะสมสำหรับส่วนสูง ${cmTxt} ซม. คือ ${f1(lo)} – ${f1(hi)} กก.`;
+      $('marker').style.left = aPct(bmi) + '%';
+    } else if (mode === 'kid') {
+      const z = zOf(bmi, p);
+      k = KID.findIndex(x => z < x.zmax || (x.zmax === 1 && z <= 1) || (x.zmax === 2 && z <= 2)); c = KID[k];
+      lo = bmiAtZ(p, -2) * m * m; hi = bmiAtZ(p, 1) * m * m;
+      const pc = normCdf(z) * 100;
+      const pcTxt = pc < 0.1 ? '< 0.1' : pc > 99.9 ? '> 99.9' : pc.toFixed(pc < 1 || pc > 99 ? 1 : 0);
+      const ageTxt = `${age.y} ปี${age.mo ? ` ${age.mo} เดือน` : ''}`;
+      $('sub').innerHTML = `เด็ก${SEXNAME[sex]} ${ageTxt} · เปอร์เซ็นไทล์ที่ <b>${pcTxt}</b> · z-score ${z >= 0 ? '+' : ''}${z.toFixed(2)}<br>` +
+        `น้ำหนักที่สมส่วนสำหรับส่วนสูง ${cmTxt} ซม. ในวัยนี้ คือ ${f1(lo)} – ${f1(hi)} กก.`;
+      $('marker').style.left = zPct(z) + '%';
+      extra = `<br><span style="color:var(--dim);font-size:13px">ค่า BMI ของเด็กเปลี่ยนตามอายุ จึงต้องเทียบกับเด็กเพศและอายุเดียวกัน ไม่ใช้ตัวเลข 18.5–22.9 แบบผู้ใหญ่</span>`;
+    } else {
+      document.documentElement.style.setProperty('--cat', '#8b5cf6');
+      $('badge').textContent = 'ต่ำกว่า 5 ปี';
+      $('sub').textContent = 'เกณฑ์ในเว็บนี้รองรับเด็กตั้งแต่ 5 ปีขึ้นไป';
+      $('marker').style.left = '50%';
+      $('advice').innerHTML = '<b>เด็กเล็กอายุต่ำกว่า 5 ปี</b><br>ควรประเมินด้วยกราฟการเจริญเติบโตในสมุดบันทึกสุขภาพแม่และเด็ก (สมุดสีชมพู) หรือปรึกษากุมารแพทย์';
+      cards.forEach(el => el.classList.remove('on'));
+      last = null;
+      return;
+    }
+    document.documentElement.style.setProperty('--cat', c.color);
+    $('badge').textContent = c.full;
+    let diff = '';
+    const okName = mode === 'adult' ? 'เกณฑ์ปกติ' : 'เกณฑ์สมส่วน';
+    if (kg < lo) diff = ` · ขาดอีกประมาณ <b>${f1(lo - kg)} กก.</b> จะถึง${okName}`;
+    else if (kg > hi) diff = ` · เกิน${okName}ประมาณ <b>${f1(kg - hi)} กก.</b>`;
+    $('advice').innerHTML = `<b>${c.mean}</b>${diff}<br>${c.tip}${extra}`;
+    cards.forEach((el, i) => el.classList.toggle('on', i === k));
+    last = { mode, p, m };
+  }
+
+  // click a figure → set the weight to the middle of that range
+  function jumpTo(i) {
+    const m = (parseFloat(hn.value) || 165) / 100;
+    let b;
+    if (last && last.mode === 'kid') b = bmiAtZ(last.p, [-3.4, -2.5, -0.5, 1.5, 2.6][i]);
+    else b = [17, 20.7, 24, 27.5, 32][i];
+    const kg = Math.round(b * m * m * 2) / 2;
+    wn.value = kg; w.value = Math.min(w.max, Math.max(w.min, kg)); fill(w); update();
+  }
+
+  function link(range, num) {
+    range.addEventListener('input', () => { num.value = range.value; fill(range); update(); });
+    num.addEventListener('input', () => {
+      const v = parseFloat(num.value);
+      if (!isNaN(v)) { range.value = Math.min(range.max, Math.max(range.min, v)); fill(range); }
+      update();
+    });
+    fill(range);
+  }
+  link(w, wn); link(h, hn);
+  ay.addEventListener('input', update);
+  am.addEventListener('input', update);
+  document.querySelectorAll('#sexPick button').forEach(b => b.addEventListener('click', () => {
+    sex = b.dataset.sex;
+    document.querySelectorAll('#sexPick button').forEach(x => {
+      const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on);
+    });
+    update();
+  }));
+  update();
+
+  // ---------- tabs ----------
+  const tabs = document.querySelectorAll('.seg button');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => { const on = x === t; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+    $('pane-calc').hidden = t.dataset.tab !== 'calc';
+    $('pane-info').hidden = t.dataset.tab !== 'info';
+  }));
+
+  // ---------- window controls ----------
+  const win = $('win'), drag = $('drag'), dockApp = $('dockApp');
+  const minimize = () => win.classList.add('min');
+  const restore = () => { win.classList.remove('min'); dockApp.classList.remove('bump'); void dockApp.offsetWidth; dockApp.classList.add('bump'); };
+  $('btnClose').addEventListener('click', minimize);
+  $('btnMax').addEventListener('click', () => drag.classList.toggle('max'));
+  dockApp.addEventListener('click', () => win.classList.contains('min') ? restore() : dockApp.classList.add('bump'));
+  dockApp.addEventListener('animationend', () => dockApp.classList.remove('bump'));
+
+  // drag window by title bar (desktop only)
+  const tb = $('titlebar');
+  let ox = 0, oy = 0, sx = 0, sy = 0, dragging = false;
+  tb.addEventListener('pointerdown', e => {
+    if (e.target.closest('button') || root.classList.contains('embedded') || !matchMedia('(min-width:761px)').matches) return;
+    dragging = true; sx = e.clientX - ox; sy = e.clientY - oy;
+    tb.setPointerCapture(e.pointerId); tb.classList.add('grabbing');
+  });
+  tb.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    ox = e.clientX - sx; oy = e.clientY - sy;
+    drag.style.transform = `translate(${ox}px,${oy}px)`;
+  });
+  const stop = () => { dragging = false; tb.classList.remove('grabbing'); };
+  tb.addEventListener('pointerup', stop);
+  tb.addEventListener('pointercancel', stop);
+  tb.addEventListener('dblclick', e => { if (!e.target.closest('button')) drag.classList.toggle('max'); });
+
+  // ---------- menu bar: clock + theme ----------
+  const clock = $('clock');
+  const tick = () => {
+    const d = new Date();
+    clock.textContent = d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' }) + '  ' +
+      d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  };
+  tick(); setInterval(tick, 10000);
+
+  const root = document.documentElement;
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  try { const t = localStorage.getItem('bmi-theme'); if (t) root.dataset.theme = t; } catch {}
+  $('themeBtn').addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('bmi-theme', root.dataset.theme); } catch {}
+  });
+
+  // follow the desktop's light/dark mode
+  window.addEventListener('message', e => {
+    if (e.data && (e.data.theme === 'light' || e.data.theme === 'dark')) root.dataset.theme = e.data.theme;
+  });
+
+  // ---------- floating bubbles ----------
+  const sky = $('sky');
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement('span');
+    el.className = 'bubble';
+    const s = rnd(12, 56);
+    Object.assign(el.style, { width: s + 'px', height: s + 'px', left: rnd(0, 100) + 'vw',
+      animationDuration: rnd(16, 32) + 's', animationDelay: -rnd(0, 32) + 's' });
+    el.style.setProperty('--sway', rnd(-80, 80) + 'px');
+    sky.appendChild(el);
+  }
+})();
+</script>
+<script>
+// embedded: tell the desktop how tall the content is, and accept a zoom-to-fit
+(() => {
+  if (window.self === window.top) return;
+  addEventListener('message', e => {
+    if (e.data && e.data.type === 'zoom' && e.data.z > 0) document.documentElement.style.zoom = e.data.z;
+  });
+  addEventListener('load', async () => {
+    try { await document.fonts.ready; } catch {}
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      parent.postMessage({ type: 'app-size', h: Math.ceil(document.body.scrollHeight) }, '*');
+    }));
+  });
+})();
+</script>
+</body>
+</html>

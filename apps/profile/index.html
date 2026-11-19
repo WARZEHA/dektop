@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<script>if (window.self !== window.top) document.documentElement.classList.add("embedded");</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profile · ธนวัฒน์ ปี่บัว</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --text:#5e1a3e; --dim:#a0607f; --accent:#e94e8f; --accent2:#9b6bff;
+    --bg1:#ffeef6; --bg2:#f3e8ff; --bg3:#e6f4ff;
+    --c1:#ffb3d1; --c2:#c9b6ff; --c3:#a8dcff; --c4:#ffd6a8;
+    --petal:rgba(255,140,190,.75); --glow:rgba(214,51,132,.12);
+    --g1:rgba(255,255,255,.45); --g2:rgba(255,255,255,.14);
+    --item:rgba(255,255,255,.38); --item-hover:rgba(255,255,255,.55);
+    --glass-edge:rgba(255,255,255,.6); --shadow:rgba(180,60,120,.2);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"Mitr","Quicksand",system-ui,sans-serif;color:var(--text);
+    background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
+    transition:color .4s;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:40px 16px;overflow-x:hidden;position:relative;
+  }
+
+  /* ---------- floating background ---------- */
+  .sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .blob{position:absolute;transition:background .8s;border-radius:50%;filter:blur(55px);opacity:.6;animation:drift 22s ease-in-out infinite alternate}
+  .b1{width:400px;height:400px;background:var(--c1);top:-100px;left:-80px}
+  .b2{width:340px;height:340px;background:var(--c2);bottom:-80px;right:-60px;animation-duration:27s;animation-delay:-7s}
+  .b3{width:260px;height:260px;background:var(--c3);top:45%;left:60%;animation-duration:31s;animation-delay:-13s}
+  .b4{width:220px;height:220px;background:var(--c4);top:65%;left:4%;animation-duration:25s;animation-delay:-4s;opacity:.45}
+  @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(10vw,8vh) scale(1.15)}100%{transform:translate(-6vw,12vh) scale(.9)}}
+  .bubble{position:absolute;bottom:-80px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(255,255,255,.15) 40%,rgba(255,182,213,.12) 70%,rgba(255,255,255,.35));
+    border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 0 10px rgba(255,255,255,.5);animation:rise linear infinite}
+  .petal{position:absolute;top:-40px;color:var(--petal);text-shadow:0 0 6px #fff;animation:fall linear infinite}
+  @keyframes rise{0%{transform:translate(0,0) scale(.8);opacity:0}10%{opacity:1}50%{transform:translate(var(--sway),-55vh)}90%{opacity:1}100%{transform:translate(calc(var(--sway)*-1),-115vh) scale(1.1);opacity:0}}
+  @keyframes fall{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(var(--sway),55vh) rotate(180deg)}90%{opacity:1}100%{transform:translate(calc(var(--sway)*-1),115vh) rotate(360deg);opacity:0}}
+
+  /* ---------- card ---------- */
+  @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes appear{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+  .card-wrap{position:relative;z-index:1;width:100%;max-width:400px;animation:appear .8s cubic-bezier(.2,.8,.2,1) both}
+  .card{
+    position:relative;border-radius:32px;padding:18px 18px 24px;
+    background:linear-gradient(160deg,var(--g1),var(--g2));
+    backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
+    border:1px solid var(--glass-edge);
+    box-shadow:0 24px 60px var(--shadow), inset 0 1px 0 rgba(255,255,255,.8);
+    animation:hover 6s ease-in-out .8s infinite;
+  }
+
+  .photo{
+    position:relative;border-radius:24px;overflow:hidden;aspect-ratio:4/4.6;
+    box-shadow:0 12px 30px rgba(94,26,62,.25);
+    border:3px solid rgba(255,255,255,.75);
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;object-position:45% 32%;display:block;transition:transform .6s ease}
+  .photo:hover img{transform:scale(1.04)}
+  .slides{display:flex;height:100%;transition:transform .9s cubic-bezier(.65,0,.35,1)}
+  .slides img{flex:0 0 100%;min-width:0}
+  .dots{position:absolute;right:14px;bottom:14px;z-index:2;display:flex;gap:6px}
+  .dots button{width:9px;height:9px;padding:0;border-radius:999px;border:none;cursor:pointer;
+    background:rgba(255,255,255,.55);transition:width .3s, background .3s}
+  .dots button.on{width:24px;background:#fff}
+  .dots button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .nav-btn{position:absolute;top:50%;z-index:2;width:36px;height:36px;margin-top:-18px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.25);color:#fff;font-size:18px;line-height:1;cursor:pointer;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .25s, background .2s}
+  .nav-btn.prev{left:10px}.nav-btn.next{right:10px}
+  .photo:hover .nav-btn,.nav-btn:focus-visible{opacity:1}
+  .nav-btn:hover{background:rgba(255,255,255,.45)}
+  @media (hover:none){.nav-btn{opacity:.8}}
+  .photo::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,transparent 55%,rgba(94,26,62,.55));pointer-events:none}
+  .tag{position:absolute;left:14px;bottom:12px;z-index:1;color:#fff;font-family:"Quicksand",sans-serif;
+    font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;
+    background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.5);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px}
+
+  .name{margin:20px 0 2px;text-align:center;font-size:26px;font-weight:600;line-height:1.3;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{text-align:center;color:var(--dim);font-size:14px;margin:0 0 10px}
+  .nick-row{text-align:center;margin-bottom:18px}
+  .nick{display:inline-block;font-size:15px;padding:6px 16px;border-radius:999px;color:var(--text);
+    background:linear-gradient(135deg,color-mix(in srgb,var(--c1) 55%,transparent),color-mix(in srgb,var(--c2) 55%,transparent));
+    border:1px solid rgba(255,255,255,.75);box-shadow:0 4px 12px var(--glow), inset 0 1px 0 rgba(255,255,255,.5)}
+  .nick b{font-weight:600;color:var(--accent)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{
+    background:var(--item);border:1px solid var(--glass-edge);border-radius:18px;
+    padding:12px 14px;display:flex;gap:12px;align-items:center;
+    box-shadow:0 4px 12px var(--glow), inset 0 1px 0 rgba(255,255,255,.5);
+    transition:transform .2s, background .2s;
+  }
+  .item:hover{transform:translateY(-3px);background:var(--item-hover)}
+  .item.wide{grid-column:1/-1}
+  .icon{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--c1) 70%,transparent),color-mix(in srgb,var(--c2) 70%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+  .label{font-size:12px;color:var(--dim);line-height:1.2}
+  .value{font-size:16px;font-weight:500;line-height:1.35}
+  .blood{font-family:"Quicksand",sans-serif;font-size:22px;font-weight:700;color:#d6194f}
+
+  .item.allergy{background:rgba(255,228,236,.55);border-color:rgba(255,160,190,.7)}
+  .item.allergy .icon{background:linear-gradient(135deg,#ff8fb3,#ff6f9f)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{font-size:14px;padding:3px 12px;border-radius:999px;background:#ff6f9f;color:#fff;
+    box-shadow:0 3px 8px rgba(214,25,79,.25)}
+
+  .foot{text-align:center;margin-top:18px;font-size:13px;color:var(--dim)}
+
+  [data-theme=night] .item.allergy{background:rgba(244,114,182,.14);border-color:rgba(244,114,182,.45)}
+  [data-theme=night] .blood{color:#ff7aa5}
+  [data-theme=night] .photo{border-color:rgba(255,255,255,.3)}
+
+  /* ---------- theme switcher ---------- */
+  .themes{
+    position:fixed;top:16px;right:16px;z-index:5;display:flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;
+    background:linear-gradient(160deg,var(--g1),var(--g2));border:1px solid var(--glass-edge);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 8px 24px var(--shadow);
+  }
+  .themes span{font-size:13px;color:var(--dim);margin-right:2px}
+  .themes button{
+    width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.85);cursor:pointer;padding:0;
+    background:linear-gradient(135deg,var(--a),var(--b));
+    box-shadow:0 2px 6px rgba(0,0,0,.15);transition:transform .2s, box-shadow .2s;
+  }
+  .themes button:hover{transform:scale(1.15)}
+  .themes button.on{box-shadow:0 0 0 3px var(--accent), 0 2px 8px rgba(0,0,0,.2);transform:scale(1.1)}
+  .themes button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  @media (max-width:720px){ .themes{top:10px;right:50%;transform:translateX(50%)} body{padding-top:70px} }
+
+  /* ---------- landscape layout ---------- */
+  .card-wrap{max-width:860px}
+  .card{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:28px;align-items:stretch;padding:20px}
+  .card .photo{aspect-ratio:auto;height:100%;min-height:420px}
+  .info{display:flex;flex-direction:column;justify-content:center;padding:6px 6px 6px 0}
+  .info .name,.info .sub,.info .nick-row,.info .foot{text-align:left}
+  .info .name{margin-top:0;font-size:30px}
+
+  @media (max-width:720px){
+    .card-wrap{max-width:420px}
+    .card{grid-template-columns:1fr;gap:0;padding:18px 18px 24px}
+    .card .photo{aspect-ratio:4/4.6;height:auto;min-height:0}
+    .info{padding:0}
+    .info .name,.info .sub,.info .nick-row,.info .foot{text-align:center}
+    .info .name{margin-top:20px;font-size:26px}
+  }
+  @media (max-width:380px){
+    .grid{grid-template-columns:1fr}
+    .info .name{font-size:23px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .blob,.card,.card-wrap{animation:none!important}
+    .bubble,.petal{display:none}
+  }
+
+  /* ---------- embedded in desktop window ---------- */
+  html.embedded,html.embedded body{min-height:0!important}
+  html.embedded body{background:transparent;padding:24px 16px}
+  html.embedded .sky{display:none}
+  html.embedded .card,html.embedded .card-wrap{animation:none}
+  html.embedded .themes{top:10px;right:10px}
+  @media (max-width:720px){ html.embedded body{padding-top:64px} }
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+</div>
+
+<nav class="themes" id="themes" aria-label="เปลี่ยนสีธีม"><span>ธีม</span></nav>
+
+<main class="card-wrap">
+  <article class="card">
+    <div class="photo">
+      <div class="slides" id="slides">
+        <img src="photo.jpg" alt="ธนวัฒน์ ใส่เสื้อเชิ้ตขาว ถ่ายตอนกลางคืน" style="object-position:45% 32%">
+        <img src="photo2.jpg" alt="ธนวัฒน์ ถ่ายรูปกระจกกับกล้องสีชมพู" style="object-position:51% 30%">
+        <img src="photo3.jpg" alt="ธนวัฒน์ ใส่เสื้อ Pharmacy Silpakorn" style="object-position:43% 30%">
+      </div>
+      <button class="nav-btn prev" id="prev" type="button" aria-label="รูปก่อนหน้า">‹</button>
+      <button class="nav-btn next" id="next" type="button" aria-label="รูปถัดไป">›</button>
+      <div class="dots" id="dots"></div>
+      <span class="tag">✿ Profile</span>
+    </div>
+
+    <div class="info">
+    <h1 class="name">นายธนวัฒน์ ปี่บัว</h1>
+    <p class="sub">Thanawat Peebua</p>
+    <div class="nick-row"><span class="nick">ชื่อเล่น · <b>มีนา</b> 🐟</span></div>
+
+    <div class="grid">
+      <div class="item wide">
+        <div class="icon">🎓</div>
+        <div><div class="label">การศึกษา</div><div class="value">มหาวิทยาลัยศิลปากร · ชั้นปีที่ 2</div></div>
+      </div>
+      <div class="item">
+        <div class="icon">🎂</div>
+        <div><div class="label">อายุ</div><div class="value" id="age">–</div></div>
+      </div>
+      <div class="item">
+        <div class="icon">🩸</div>
+        <div><div class="label">กรุ๊ปเลือด</div><div class="value blood">AB</div></div>
+      </div>
+      <div class="item wide">
+        <div class="icon">📅</div>
+        <div><div class="label">วันเดือนปีเกิด</div><div class="value" id="bday">24 มีนาคม 2550</div></div>
+      </div>
+      <div class="item wide allergy">
+        <div class="icon">⚠️</div>
+        <div>
+          <div class="label">อาหารที่แพ้</div>
+          <div class="chips"><span class="chip">ถั่วปากอ้า</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot" id="countdown"></div>
+    </div>
+  </article>
+</main>
+
+<script>
+(() => {
+  // birthday: 24 March 2007 (พ.ศ. 2550)
+  const B = { y: 2007, m: 2, d: 24 };
+  const now = new Date();
+  let age = now.getFullYear() - B.y;
+  if (now.getMonth() < B.m || (now.getMonth() === B.m && now.getDate() < B.d)) age--;
+  document.getElementById('age').textContent = age + ' ปี';
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let next = new Date(now.getFullYear(), B.m, B.d);
+  if (next < today) next = new Date(now.getFullYear() + 1, B.m, B.d);
+  const days = Math.round((next - today) / 86400000);
+  document.getElementById('countdown').textContent =
+    days === 0 ? '🎉 สุขสันต์วันเกิดวันนี้! 🎉' : `อีก ${days} วันถึงวันเกิด ♡`;
+
+  // ---------- photo slideshow (every 5s) ----------
+  const track = document.getElementById('slides');
+  const imgs = track.querySelectorAll('img');
+  const dotsEl = document.getElementById('dots');
+  const photo = track.parentElement;
+  let cur = 0, timer = null;
+  const dots = [...imgs].map((_, i) => {
+    const d = document.createElement('button');
+    d.type = 'button'; d.setAttribute('aria-label', 'รูปที่ ' + (i + 1));
+    d.addEventListener('click', () => { go(i); restart(); });
+    dotsEl.appendChild(d);
+    return d;
+  });
+  function go(i) {
+    cur = (i + imgs.length) % imgs.length;
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d, k) => d.classList.toggle('on', k === cur));
+  }
+  function restart() { clearInterval(timer); timer = setInterval(() => go(cur + 1), 5000); }
+  document.getElementById('prev').addEventListener('click', () => { go(cur - 1); restart(); });
+  document.getElementById('next').addEventListener('click', () => { go(cur + 1); restart(); });
+  photo.addEventListener('mouseenter', () => clearInterval(timer));
+  photo.addEventListener('mouseleave', restart);
+  let sx = null;
+  photo.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  photo.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 40) { go(cur + (dx < 0 ? 1 : -1)); restart(); }
+  });
+  go(0); restart();
+
+  // ---------- theme switcher ----------
+  const THEMES = {
+    pink:   { name: 'ชมพูซากุระ', vars: {} },
+    lilac:  { name: 'ม่วงลาเวนเดอร์', vars: { '--text':'#3f2466', '--dim':'#8a6fb0', '--accent':'#8b5cf6', '--accent2':'#ec4899',
+      '--bg1':'#f5edff', '--bg2':'#ede4ff', '--bg3':'#ffe9f6', '--c1':'#c4b5fd', '--c2':'#f0abfc', '--c3':'#a5b4fc', '--c4':'#fbcfe8',
+      '--petal':'rgba(167,139,250,.75)', '--glow':'rgba(124,58,237,.12)', '--shadow':'rgba(109,40,217,.2)' } },
+    ocean:  { name: 'ฟ้าทะเล', vars: { '--text':'#12355b', '--dim':'#5b7fa6', '--accent':'#0ea5e9', '--accent2':'#6366f1',
+      '--bg1':'#e8f6ff', '--bg2':'#e6efff', '--bg3':'#eafff9', '--c1':'#7dd3fc', '--c2':'#a5b4fc', '--c3':'#99f6e4', '--c4':'#bfdbfe',
+      '--petal':'rgba(56,189,248,.7)', '--glow':'rgba(14,116,224,.12)', '--shadow':'rgba(30,64,175,.18)' } },
+    mint:   { name: 'มิ้นต์', vars: { '--text':'#14463a', '--dim':'#5a9182', '--accent':'#10b981', '--accent2':'#06b6d4',
+      '--bg1':'#eafff6', '--bg2':'#e6fbff', '--bg3':'#f4ffe9', '--c1':'#6ee7b7', '--c2':'#a5f3fc', '--c3':'#bef264', '--c4':'#99f6e4',
+      '--petal':'rgba(52,211,153,.7)', '--glow':'rgba(5,150,105,.12)', '--shadow':'rgba(4,120,87,.18)' } },
+    peach:  { name: 'พีช', vars: { '--text':'#5c2a14', '--dim':'#b07254', '--accent':'#f97316', '--accent2':'#f43f5e',
+      '--bg1':'#fff3e8', '--bg2':'#ffeef0', '--bg3':'#fffbe6', '--c1':'#fdba74', '--c2':'#fda4af', '--c3':'#fde68a', '--c4':'#fecaca',
+      '--petal':'rgba(251,146,60,.7)', '--glow':'rgba(234,88,12,.12)', '--shadow':'rgba(194,65,12,.18)' } },
+    night:  { name: 'กลางคืน', vars: { '--text':'#f5e9ff', '--dim':'#b9a6d6', '--accent':'#f472b6', '--accent2':'#a78bfa',
+      '--bg1':'#1a1033', '--bg2':'#221642', '--bg3':'#0f1a33', '--c1':'#be185d', '--c2':'#6d28d9', '--c3':'#1d4ed8', '--c4':'#7e22ce',
+      '--petal':'rgba(244,114,182,.7)', '--glow':'rgba(0,0,0,.25)', '--shadow':'rgba(0,0,0,.45)',
+      '--g1':'rgba(255,255,255,.14)', '--g2':'rgba(255,255,255,.04)', '--item':'rgba(255,255,255,.08)', '--item-hover':'rgba(255,255,255,.16)',
+      '--glass-edge':'rgba(255,255,255,.22)' } }
+  };
+  const SWATCH = { pink:['#ffb3d1','#c9b6ff'], lilac:['#c4b5fd','#f0abfc'], ocean:['#7dd3fc','#a5b4fc'],
+                   mint:['#6ee7b7','#a5f3fc'], peach:['#fdba74','#fda4af'], night:['#1a1033','#6d28d9'] };
+  const ALL_KEYS = [...new Set(Object.values(THEMES).flatMap(t => Object.keys(t.vars)))];
+  const nav = document.getElementById('themes');
+  const root = document.documentElement;
+  function applyTheme(key) {
+    ALL_KEYS.forEach(k => root.style.removeProperty(k));
+    root.dataset.theme = key;
+    Object.entries(THEMES[key].vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    nav.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('on', b.dataset.t === key);
+      b.setAttribute('aria-pressed', b.dataset.t === key);
+    });
+    try { localStorage.setItem('profile-theme', key); } catch {}
+  }
+  Object.entries(THEMES).forEach(([key, t]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.t = key; b.title = t.name; b.setAttribute('aria-label', 'ธีม' + t.name);
+    b.style.setProperty('--a', SWATCH[key][0]); b.style.setProperty('--b', SWATCH[key][1]);
+    b.addEventListener('click', () => applyTheme(key));
+    nav.appendChild(b);
+  });
+  let saved = 'pink';
+  try { const v = localStorage.getItem('profile-theme'); if (v && THEMES[v]) saved = v; } catch {}
+  applyTheme(saved);
+
+  // floating bubbles & petals
+  const sky = document.getElementById('sky');
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const glyphs = ['✿', '❀', '♥', '✦'];
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement('span');
+    el.className = 'bubble';
+    const s = rnd(14, 60);
+    Object.assign(el.style, { width: s + 'px', height: s + 'px', left: rnd(0, 100) + 'vw',
+      animationDuration: rnd(14, 30) + 's', animationDelay: -rnd(0, 30) + 's' });
+    el.style.setProperty('--sway', rnd(-80, 80) + 'px');
+    sky.appendChild(el);
+  }
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('span');
+    el.className = 'petal';
+    el.textContent = glyphs[i % glyphs.length];
+    Object.assign(el.style, { left: rnd(0, 100) + 'vw', fontSize: rnd(12, 24) + 'px',
+      animationDuration: rnd(16, 32) + 's', animationDelay: -rnd(0, 32) + 's' });
+    el.style.setProperty('--sway', rnd(-120, 120) + 'px');
+    sky.appendChild(el);
+  }
+})();
+</script>
+<script>
+// embedded: tell the desktop how tall the content is, and accept a zoom-to-fit
+(() => {
+  if (window.self === window.top) return;
+  addEventListener('message', e => {
+    if (e.data && e.data.type === 'zoom' && e.data.z > 0) document.documentElement.style.zoom = e.data.z;
+  });
+  addEventListener('load', async () => {
+    try { await document.fonts.ready; } catch {}
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      parent.postMessage({ type: 'app-size', h: Math.ceil(document.body.scrollHeight) }, '*');
+    }));
+  });
+})();
+</script>
+</body>
+</html>
