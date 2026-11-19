@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meena Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall:linear-gradient(160deg,#bcd3ff 0%,#e3d3ff 38%,#ffd3e2 68%,#ffe6c7 100%);
+    --blob1:#9ec5ff; --blob2:#d6b4ff; --blob3:#ffb3cf; --blob4:#ffd29e;
+    --win:rgba(255,255,255,.55); --titlebar:rgba(248,248,250,.75);
+    --text:#1d1d1f; --dim:#6e6e73; --line:rgba(0,0,0,.08); --edge:rgba(255,255,255,.85);
+    --bar:rgba(255,255,255,.45); --shadow:rgba(40,30,90,.3); --hover:rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --wall:linear-gradient(160deg,#141a3a 0%,#2a1b4d 40%,#3b1f45 70%,#142441 100%);
+      --blob1:#2b5bd7; --blob2:#7a3fd1; --blob3:#c23a7a; --blob4:#c2662b;
+      --win:rgba(40,40,48,.55); --titlebar:rgba(46,46,52,.8);
+      --text:#f5f5f7; --dim:#a1a1a6; --line:rgba(255,255,255,.1); --edge:rgba(255,255,255,.14);
+      --bar:rgba(20,20,26,.45); --shadow:rgba(0,0,0,.6); --hover:rgba(255,255,255,.1);
+    }
+  }
+  :root[data-theme="dark"]{
+    --wall:linear-gradient(160deg,#141a3a 0%,#2a1b4d 40%,#3b1f45 70%,#142441 100%);
+    --blob1:#2b5bd7; --blob2:#7a3fd1; --blob3:#c23a7a; --blob4:#c2662b;
+    --win:rgba(40,40,48,.55); --titlebar:rgba(46,46,52,.8);
+    --text:#f5f5f7; --dim:#a1a1a6; --line:rgba(255,255,255,.1); --edge:rgba(255,255,255,.14);
+    --bar:rgba(20,20,26,.45); --shadow:rgba(0,0,0,.6); --hover:rgba(255,255,255,.1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);
+    background:#cfd8ff;background:var(--wall);overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none;
+  }
+  button{font:inherit;color:inherit}
+
+  /* ---------- wallpaper ---------- */
+  .sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.7;animation:drift 24s ease-in-out infinite alternate}
+  .b1{width:460px;height:460px;background:var(--blob1);top:-120px;left:-100px}
+  .b2{width:380px;height:380px;background:var(--blob2);top:30%;right:-120px;animation-duration:29s;animation-delay:-8s}
+  .b3{width:320px;height:320px;background:var(--blob3);bottom:-100px;left:30%;animation-duration:33s;animation-delay:-14s}
+  .b4{width:240px;height:240px;background:var(--blob4);top:55%;left:-40px;animation-duration:26s;animation-delay:-5s;opacity:.5}
+  @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(9vw,7vh) scale(1.15)}100%{transform:translate(-5vw,12vh) scale(.9)}}
+  .bubble{position:absolute;bottom:-80px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.85),rgba(255,255,255,.12) 42%,rgba(255,255,255,.05) 70%,rgba(255,255,255,.3));
+    border:1px solid rgba(255,255,255,.45);animation:rise linear infinite}
+  .petal{position:absolute;top:-40px;color:rgba(255,140,190,.7);text-shadow:0 0 6px #fff;animation:fall linear infinite}
+  @keyframes rise{0%{transform:translate(0,0) scale(.8);opacity:0}10%{opacity:.9}50%{transform:translate(var(--sway),-55vh)}90%{opacity:.9}100%{transform:translate(calc(var(--sway)*-1),-115vh) scale(1.1);opacity:0}}
+  @keyframes fall{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:1}50%{transform:translate(var(--sway),55vh) rotate(180deg)}90%{opacity:1}100%{transform:translate(calc(var(--sway)*-1),115vh) rotate(360deg);opacity:0}}
+
+  .hello{position:fixed;left:40px;bottom:120px;z-index:1;pointer-events:none;color:#fff;text-shadow:0 2px 16px rgba(60,30,120,.35)}
+  .hello .t{font-size:clamp(40px,7vw,84px);font-weight:700;line-height:1;letter-spacing:-1px}
+  .hello .d{font-size:clamp(15px,1.6vw,20px);font-weight:500;margin-top:8px;opacity:.95}
+
+  /* ---------- menu bar ---------- */
+  .menubar{position:fixed;top:0;left:0;right:0;height:30px;z-index:9000;display:flex;align-items:center;gap:18px;padding:0 16px;
+    background:var(--bar);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+    font-size:13px;border-bottom:1px solid var(--line)}
+  .menubar .logo{font-size:15px}
+  .menubar .app{font-weight:700}
+  .menubar .spacer{flex:1}
+  .menubar .m{opacity:.85}
+  .theme-btn{border:none;background:none;cursor:pointer;padding:2px 6px;border-radius:6px;font-size:14px;line-height:1}
+  .theme-btn:hover{background:var(--hover)}
+  #clock{white-space:nowrap}
+
+  /* ---------- desktop icons ---------- */
+  .icons{position:fixed;top:48px;right:20px;z-index:2;display:flex;flex-direction:column;gap:14px}
+  .dicon{width:96px;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;border-radius:10px}
+  .dicon:hover,.dicon:focus-visible{background:rgba(255,255,255,.22);outline:none}
+  .dicon .lbl{font-size:12.5px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);text-align:center;line-height:1.25}
+
+  /* ---------- app icon art ---------- */
+  .ico{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-size:30px;overflow:hidden;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 10px rgba(0,0,0,.22)}
+  .ico.bmi{background:linear-gradient(145deg,#5ac8fa,#0a84ff 55%,#5e5ce6)}
+  .ico.calc{background:linear-gradient(145deg,#ffc2da,#ff86b8 55%,#e2407f)}
+  .ico.calc .keys{display:grid;grid-template-columns:repeat(3,10px);gap:3px}
+  .ico.calc .keys i{width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.85)}
+  .ico.calc .keys i.eq{background:#a92560}
+  .ico.calc .scr{position:absolute;top:8px;left:9px;right:9px;height:10px;border-radius:3px;background:rgba(255,255,255,.9)}
+  .ico.calc .keys{margin-top:14px}
+  .ico.profile{background:linear-gradient(145deg,#ffb3d1,#c9b6ff)}
+  .ico.profile img{width:100%;height:100%;object-fit:cover;object-position:45% 30%}
+
+  /* ---------- dock ---------- */
+  .dock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:9000;display:flex;align-items:flex-end;gap:10px;padding:8px 10px;
+    border-radius:22px;background:var(--bar);border:1px solid var(--edge);
+    backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .dock-item{position:relative;display:flex;flex-direction:column;align-items:center}
+  .dock-item button{border:none;background:none;padding:0;cursor:pointer;transition:transform .2s cubic-bezier(.3,1.6,.5,1);transform-origin:50% 100%}
+  .dock-item button:hover,.dock-item button:focus-visible{transform:translateY(-8px) scale(1.18);outline:none}
+  .dock-item .ico{width:54px;height:54px}
+  .dock-item .run{width:4px;height:4px;border-radius:50%;background:var(--text);opacity:0;margin-top:4px;transition:opacity .3s}
+  .dock-item.open .run{opacity:.75}
+  .dock-item.bounce button{animation:bounce .55s ease 2}
+  @keyframes bounce{50%{transform:translateY(-16px)}}
+  .tip{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;padding:4px 10px;border-radius:6px;
+    background:var(--titlebar);border:1px solid var(--line);opacity:0;pointer-events:none;transition:opacity .15s}
+  .dock-item button:hover ~ .tip,.dock-item button:focus-visible ~ .tip{opacity:1}
+
+  /* ---------- windows ---------- */
+  .win{position:fixed;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;
+    background:var(--win);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+    border:1px solid var(--edge);box-shadow:0 30px 80px var(--shadow),0 0 0 .5px rgba(0,0,0,.2);
+    transition:transform .45s cubic-bezier(.5,0,.2,1),opacity .35s,left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1);
+    animation:wopen .45s cubic-bezier(.2,.8,.2,1) both}
+  .win.nomove{transition:transform .45s cubic-bezier(.5,0,.2,1),opacity .35s}
+  .win:not(.front){box-shadow:0 16px 40px var(--shadow),0 0 0 .5px rgba(0,0,0,.15)}
+  .win:not(.front) .tb{opacity:.85}
+  @keyframes wopen{from{opacity:0;transform:scale(.9) translateY(16px)}to{opacity:1;transform:none}}
+  .win.closing{opacity:0;transform:scale(.92)}
+  .win.min{opacity:0;pointer-events:none}
+  .tb{flex:none;height:46px;display:grid;grid-template-columns:80px 1fr 80px;align-items:center;padding:0 12px;
+    background:var(--titlebar);border-bottom:1px solid var(--line);cursor:grab;touch-action:none}
+  .tb.grabbing{cursor:grabbing}
+  .tb .ttl{text-align:center;font-size:14.5px;font-weight:600;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lights{display:flex;gap:10px}
+  .lights button{width:17px;height:17px;border-radius:50%;border:none;padding:0;cursor:pointer;position:relative;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.2)}
+  .lights .r{background:#ff5f57}.lights .y{background:#febc2e}.lights .g{background:#28c840}
+  .win:not(.front) .lights button{background:#c9c9cc}
+  .lights button::after{position:absolute;inset:0;font-size:13px;font-weight:700;line-height:17px;text-align:center;color:rgba(0,0,0,.55);opacity:0}
+  .lights .r::after{content:"×"}.lights .y{cursor:default}.lights .g::after{content:"+"}
+  .lights:hover button::after{opacity:1}
+  .lights:hover .r{background:#ff5f57}.lights:hover .y{background:#febc2e}.lights:hover .g{background:#28c840}
+  .body{position:relative;flex:1;min-height:0}
+  .body iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;display:block}
+  .shield{position:absolute;inset:0;display:none}
+  .win:not(.front) .shield,body.dragging .shield{display:block}
+
+  /* resize handles */
+  .rz{position:absolute;z-index:5;touch-action:none}
+  .rz.n{top:-3px;left:10px;right:10px;height:8px;cursor:ns-resize}
+  .rz.s{bottom:-3px;left:10px;right:10px;height:8px;cursor:ns-resize}
+  .rz.e{right:-3px;top:10px;bottom:10px;width:8px;cursor:ew-resize}
+  .rz.w{left:-3px;top:10px;bottom:10px;width:8px;cursor:ew-resize}
+  .rz.ne{top:-3px;right:-3px;width:16px;height:16px;cursor:nesw-resize}
+  .rz.nw{top:-3px;left:-3px;width:16px;height:16px;cursor:nwse-resize}
+  .rz.se{bottom:-3px;right:-3px;width:18px;height:18px;cursor:nwse-resize}
+  .rz.sw{bottom:-3px;left:-3px;width:16px;height:16px;cursor:nesw-resize}
+  .rz.se::after{content:"";position:absolute;right:6px;bottom:6px;width:8px;height:8px;
+    border-right:2px solid var(--dim);border-bottom:2px solid var(--dim);border-radius:0 0 3px 0;opacity:.45;transition:opacity .2s}
+  .win:hover .rz.se::after{opacity:.8}
+  body.resizing,body.resizing *{user-select:none}
+  .win.max .rz{display:none}
+  @media (max-width:760px){ .rz{display:none} }
+
+  /* ---------- small screens ---------- */
+  @media (max-width:760px){
+    .menubar .hide-sm{display:none}
+    .menubar{gap:10px;padding:0 10px}
+    .icons{top:44px;right:8px;gap:6px}
+    .dicon{width:84px}
+    .hello{left:18px;bottom:110px}
+    .tb{cursor:default}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    .bubble,.petal{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+</div>
+
+<header class="menubar">
+  <span class="logo">✿</span>
+  <span class="app" id="activeApp">Finder</span>
+  <span class="m hide-sm">ไฟล์</span><span class="m hide-sm">แก้ไข</span><span class="m hide-sm">มุมมอง</span><span class="m hide-sm">หน้าต่าง</span>
+  <span class="spacer"></span>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="สลับโหมดสว่าง/มืด">◐</button>
+  <span id="clock"></span>
+</header>
+
+<div class="hello" aria-hidden="true">
+  <div class="t" id="bigTime">--:--</div>
+  <div class="d" id="bigDate"></div>
+</div>
+
+<nav class="icons" id="icons" aria-label="ไอคอนบนเดสก์ท็อป"></nav>
+<div id="windows"></div>
+<nav class="dock" id="dock" aria-label="Dock"></nav>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+
+  // ---------- apps ----------
+  const APPS = {
+    profile: { title: 'โปรไฟล์ · มีนา', src: 'apps/profile/index.html', w: 940, h: 660,
+      icon: '<div class="ico profile"><img src="apps/profile/photo.jpg" alt=""></div>' },
+    calculator: { title: 'Sakura Calc', src: 'apps/calculator/index.html', w: 800, h: 780,
+      icon: '<div class="ico calc"><span class="scr"></span><span class="keys"><i></i><i></i><i></i><i></i><i></i><i class="eq"></i></span></div>' },
+    bmi: { title: 'BMI Calculator', src: 'apps/bmi/index.html', w: 1000, h: 800,
+      icon: '<div class="ico bmi">⚖️</div>' }
+  };
+  const NAMES = { profile: 'โปรไฟล์', calculator: 'เครื่องคิดเลข', bmi: 'คำนวณ BMI' };
+
+  // desktop icons + dock
+  const dockItems = {};
+  Object.entries(APPS).forEach(([id, a]) => {
+    const d = document.createElement('button');
+    d.type = 'button'; d.className = 'dicon';
+    d.innerHTML = `${a.icon}<span class="lbl">${NAMES[id]}</span>`;
+    d.addEventListener('click', () => openApp(id));
+    $('icons').appendChild(d);
+
+    const it = document.createElement('div');
+    it.className = 'dock-item';
+    it.innerHTML = `<button type="button" aria-label="เปิด ${NAMES[id]}">${a.icon}</button><span class="run"></span><span class="tip">${NAMES[id]}</span>`;
+    it.querySelector('button').addEventListener('click', () => openApp(id));
+    $('dock').appendChild(it);
+    dockItems[id] = it;
+  });
+
+  // ---------- window manager ----------
+  const wins = {};
+  let z = 10, cascade = 0;
+  const small = () => matchMedia('(max-width:760px)').matches;
+  const TOP = 30, DOCK = 92;
+
+  function fitRect(a) {
+    const vw = innerWidth, vh = innerHeight;
+    if (small()) return { x: 0, y: TOP, w: vw, h: vh - TOP - DOCK };
+    const w = Math.min(a.w, vw - 40), h = Math.min(a.h, vh - TOP - DOCK - 20);
+    const off = (cascade++ % 5) * 28;
+    return { x: Math.max(10, (vw - w) / 2 - 60 + off), y: Math.max(TOP + 10, TOP + (vh - TOP - DOCK - h) / 2 + off - 30), w, h };
+  }
+  function place(el, r) {
+    Object.assign(el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+  }
+
+  function focusWin(id) {
+    Object.entries(wins).forEach(([k, w]) => w.el.classList.toggle('front', k === id));
+    if (id && wins[id]) wins[id].el.style.zIndex = ++z;
+    $('activeApp').textContent = id ? NAMES[id] : 'Finder';
+  }
+
+  function bounce(id) {
+    const it = dockItems[id];
+    it.classList.remove('bounce'); void it.offsetWidth; it.classList.add('bounce');
+    it.addEventListener('animationend', () => it.classList.remove('bounce'), { once: true });
+  }
+
+  function openApp(id) {
+    const ex = wins[id];
+    if (ex) {
+      if (ex.el.classList.contains('min')) { ex.el.classList.remove('min'); ex.el.style.transform = ''; }
+      focusWin(id); return;
+    }
+    const a = APPS[id];
+    const el = document.createElement('section');
+    el.className = 'win';
+    el.setAttribute('aria-label', a.title);
+    el.innerHTML = `
+      <div class="tb">
+        <div class="lights">
+          <button class="r" type="button" aria-label="ปิด"></button>
+          <button class="y" type="button" aria-hidden="true" tabindex="-1"></button>
+          <button class="g" type="button" aria-label="ขยาย"></button>
+        </div>
+        <div class="ttl">${a.title}</div><div></div>
+      </div>
+      <div class="body"><iframe src="${a.src}" title="${a.title}"></iframe><div class="shield"></div></div>
+      ${['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].map(d => `<div class="rz ${d}" data-dir="${d}"></div>`).join('')}`;
+    $('windows').appendChild(el);
+    const rect = fitRect(a);
+    place(el, rect);
+    const w = wins[id] = { el, rect, max: false, frame: el.querySelector('iframe') };
+    w.frame.addEventListener('load', () => sendTheme(w.frame));
+
+    el.addEventListener('pointerdown', () => focusWin(id));
+    el.querySelector('.r').addEventListener('click', e => { e.stopPropagation(); closeApp(id); });
+    el.querySelector('.g').addEventListener('click', e => { e.stopPropagation(); toggleMax(id); });
+    el.querySelector('.tb').addEventListener('dblclick', e => { if (!e.target.closest('button')) toggleMax(id); });
+    makeDraggable(id);
+    makeResizable(id);
+    dockItems[id].classList.add('open');
+    bounce(id);
+    focusWin(id);
+  }
+
+  function closeApp(id) {
+    const w = wins[id]; if (!w) return;
+    w.el.classList.add('closing');
+    delete wins[id];
+    dockItems[id].classList.remove('open');
+    setTimeout(() => w.el.remove(), 350);
+    const rest = Object.keys(wins).filter(k => !wins[k].el.classList.contains('min'));
+    focusWin(rest.sort((a, b) => wins[b].el.style.zIndex - wins[a].el.style.zIndex)[0]);
+  }
+
+  function minApp(id) {
+    const w = wins[id];
+    const ic = dockItems[id].querySelector('button').getBoundingClientRect();
+    const r = w.el.getBoundingClientRect();
+    const dx = ic.left + ic.width / 2 - (r.left + r.width / 2), dy = ic.top + ic.height / 2 - (r.top + r.height / 2);
+    w.el.style.transform = `translate(${dx}px,${dy}px) scale(.06)`;
+    w.el.classList.add('min');
+    const rest = Object.keys(wins).filter(k => k !== id && !wins[k].el.classList.contains('min'));
+    focusWin(rest.sort((a, b) => wins[b].el.style.zIndex - wins[a].el.style.zIndex)[0]);
+  }
+
+  function toggleMax(id) {
+    const w = wins[id];
+    if (small()) return;
+    w.max = !w.max;
+    w.el.classList.toggle('max', w.max);
+    place(w.el, w.max ? { x: 0, y: TOP, w: innerWidth, h: innerHeight - TOP - DOCK } : w.rect);
+  }
+
+  function makeDraggable(id) {
+    const w = wins[id], tb = w.el.querySelector('.tb');
+    let sx, sy, ox, oy, on = false;
+    tb.addEventListener('pointerdown', e => {
+      if (e.target.closest('button') || small() || w.max) return;
+      on = true; sx = e.clientX; sy = e.clientY; ox = w.rect.x; oy = w.rect.y;
+      tb.setPointerCapture(e.pointerId); tb.classList.add('grabbing');
+      w.el.classList.add('nomove'); document.body.classList.add('dragging');
+    });
+    tb.addEventListener('pointermove', e => {
+      if (!on) return;
+      w.rect.x = Math.min(innerWidth - 80, Math.max(80 - w.rect.w, ox + e.clientX - sx));
+      w.rect.y = Math.min(innerHeight - 60, Math.max(TOP, oy + e.clientY - sy));
+      w.el.style.left = w.rect.x + 'px'; w.el.style.top = w.rect.y + 'px';
+    });
+    const stop = () => { if (!on) return; on = false; tb.classList.remove('grabbing'); w.el.classList.remove('nomove'); document.body.classList.remove('dragging'); };
+    tb.addEventListener('pointerup', stop);
+    tb.addEventListener('pointercancel', stop);
+  }
+
+  // ---------- fit window to the app's content on open ----------
+  const TB_H = 46 + 2; // title bar + borders
+  addEventListener('message', e => {
+    const d = e.data;
+    if (!d || d.type !== 'app-size' || !(d.h > 0)) return;
+    const entry = Object.entries(wins).find(([, w]) => w.frame.contentWindow === e.source);
+    if (!entry) return;
+    const [, w] = entry;
+    if (w.fitted || w.max || small()) return;
+    w.fitted = true;
+    const avail = innerHeight - TOP - DOCK - 16;
+    const r = { ...w.rect };
+    if (d.h + TB_H <= avail) {
+      r.h = d.h + TB_H;
+    } else {
+      // too tall for this screen: shrink the content a little (never below 80% so text stays readable);
+      // keep the window width so the layout stays the same
+      const z = Math.max(0.8, (avail - TB_H) / d.h);
+      w.frame.contentWindow.postMessage({ type: 'zoom', z }, '*');
+      r.h = avail;
+    }
+    r.y = Math.max(TOP + 8, TOP + (innerHeight - TOP - DOCK - r.h) / 2);
+    r.x = Math.min(Math.max(8, r.x), innerWidth - r.w - 8);
+    w.rect = r;
+    place(w.el, r);
+  });
+
+  // drag edges / corners to resize
+  const MIN_W = 340, MIN_H = 240;
+  function makeResizable(id) {
+    const w = wins[id];
+    w.el.querySelectorAll('.rz').forEach(h => {
+      let sx, sy, r0, on = false;
+      const dir = h.dataset.dir;
+      h.addEventListener('pointerdown', e => {
+        if (small() || w.max) return;
+        e.stopPropagation();
+        focusWin(id);
+        on = true; sx = e.clientX; sy = e.clientY; r0 = { ...w.rect };
+        h.setPointerCapture(e.pointerId);
+        w.el.classList.add('nomove'); document.body.classList.add('dragging', 'resizing');
+      });
+      h.addEventListener('pointermove', e => {
+        if (!on) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy, r = { ...r0 };
+        const maxW = innerWidth, maxBottom = innerHeight - 8;
+        if (dir.includes('e')) r.w = Math.min(Math.max(MIN_W, r0.w + dx), maxW - r0.x);
+        if (dir.includes('s')) r.h = Math.min(Math.max(MIN_H, r0.h + dy), maxBottom - r0.y);
+        if (dir.includes('w')) { const nw = Math.max(MIN_W, r0.w - dx); r.x = Math.max(0, r0.x + r0.w - nw); r.w = r0.x + r0.w - r.x; }
+        if (dir.includes('n')) { const nh = Math.max(MIN_H, r0.h - dy); r.y = Math.max(TOP, r0.y + r0.h - nh); r.h = r0.y + r0.h - r.y; }
+        w.rect = r;
+        place(w.el, r);
+      });
+      const stop = () => { if (!on) return; on = false; w.el.classList.remove('nomove'); document.body.classList.remove('dragging', 'resizing'); };
+      h.addEventListener('pointerup', stop);
+      h.addEventListener('pointercancel', stop);
+    });
+  }
+
+  addEventListener('resize', () => {
+    Object.values(wins).forEach(w => {
+      if (small() || w.max) place(w.el, small() ? { x: 0, y: TOP, w: innerWidth, h: innerHeight - TOP - DOCK } : { x: 0, y: TOP, w: innerWidth, h: innerHeight - TOP - DOCK });
+      else {
+        w.rect.w = Math.min(w.rect.w, innerWidth - 20); w.rect.h = Math.min(w.rect.h, innerHeight - TOP - DOCK - 10);
+        w.rect.x = Math.min(w.rect.x, innerWidth - w.rect.w); w.rect.y = Math.max(TOP, Math.min(w.rect.y, innerHeight - DOCK - w.rect.h));
+        place(w.el, w.rect);
+      }
+    });
+  });
+
+  // ---------- light / dark ----------
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  function sendTheme(f) { try { f.contentWindow.postMessage({ theme: isDark() ? 'dark' : 'light' }, '*'); } catch {} }
+  try { const t = localStorage.getItem('desk-theme'); if (t) root.dataset.theme = t; } catch {}
+  $('themeBtn').addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    try { localStorage.setItem('desk-theme', root.dataset.theme); } catch {}
+    Object.values(wins).forEach(w => sendTheme(w.frame));
+  });
+
+  // ---------- clock ----------
+  const tick = () => {
+    const d = new Date();
+    $('clock').textContent = d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' }) + '  ' +
+      d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    $('bigTime').textContent = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    $('bigDate').textContent = d.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+  tick(); setInterval(tick, 10000);
+
+  // ---------- floating bubbles & petals ----------
+  const sky = $('sky');
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement('span');
+    el.className = 'bubble';
+    const s = rnd(12, 56);
+    Object.assign(el.style, { width: s + 'px', height: s + 'px', left: rnd(0, 100) + 'vw',
+      animationDuration: rnd(16, 32) + 's', animationDelay: -rnd(0, 32) + 's' });
+    el.style.setProperty('--sway', rnd(-80, 80) + 'px');
+    sky.appendChild(el);
+  }
+  ['✿', '❀', '♥', '✦', '✿', '❀', '♥', '✦'].forEach(g => {
+    const el = document.createElement('span');
+    el.className = 'petal'; el.textContent = g;
+    Object.assign(el.style, { left: rnd(0, 100) + 'vw', fontSize: rnd(12, 22) + 'px',
+      animationDuration: rnd(18, 34) + 's', animationDelay: -rnd(0, 34) + 's' });
+    el.style.setProperty('--sway', rnd(-120, 120) + 'px');
+    sky.appendChild(el);
+  });
+
+  // open the profile on start
+  openApp('profile');
+})();
+</script>
+</body>
+</html>
